@@ -1,0 +1,26 @@
+---
+- name: Create a VM from a template
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  tasks:
+  - name: Clone the template
+    vmware_guest:
+      hostname: "{{vCenter_hostname}}"
+      username: "{{username}}"
+      password: "{{password}}"
+      validate_certs: False
+      name: "{{vm_name}}"
+      template: "{{template}}"
+      datacenter: "HPE-LAB-DC"
+      folder: "Mannai-Demo"
+      state: poweredon
+      networks:
+         - name: "VLAN_500"
+           type: static
+           device_type: vmxnet3
+           ip: 10.2.250.98
+           netmask: 255.255.255.0
+           gateway: 10.2.250.1
+           start_connected: yes
+      wait_for_ip_address: yes

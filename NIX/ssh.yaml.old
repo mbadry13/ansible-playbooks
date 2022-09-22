@@ -1,0 +1,44 @@
+---
+- name: Playbook to automate SSH on clients
+  hosts: all
+  gather_facts: no
+  tasks:
+  - name: Configure SSH on "{{ansible_hostname}}"
+    template:
+      src: sshd_config.j2
+      dest: /etc/ssh/sshd_config
+    when: 'vm_name |string  is match inventory_hostname' 
+    delegate_to: "{{vm_name}}"
+  - name: restart the SSH service
+    service:
+      name: sshd
+      state: restarted
+    when: 'vm_name |string is match inventory_hostname'
+  - name: install apache webserver
+    yum:
+      name: httpd
+      state: latest
+    when: 'vm_name |string  is match inventory_hostname'
+
+  - name: copy index file
+    template:
+      src: index.html
+      dest: /var/www/html
+      owner: apache
+      group: apache
+      mode: '0644'
+    when: 'vm_name |string  is match inventory_hostname'
+
+  - name: start the webserver
+    service:
+      name: httpd
+      state: restarted
+    when: 'vm_name |string  is match inventory_hostname'
+
+  - name: configure firewall FARAG TEST
+    service:
+      name: firewalld.service
+      state: stopped
+    when: 'vm_name |string  is match inventory_hostname'
+
+

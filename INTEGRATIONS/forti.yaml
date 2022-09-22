@@ -1,0 +1,24 @@
+- hosts: all
+  collections:
+    - fortinet.fortios
+  connection: httpapi
+  vars:
+   vdom: "root"
+   ansible_httpapi_use_ssl: yes
+   ansible_httpapi_validate_certs: no
+   ansible_httpapi_port: 443
+  tasks:
+  - name: Configure AntiVirus notification lists.
+    fortios_antivirus_notification:
+      vdom:  "{{ vdom }}"
+      state: "present"
+      access_token: "4s136kbN4jjnGbtxp7c90pjhrw5mzn4s136kbN4jjnGbtxp7c90pjhrw5mzn"
+      antivirus_notification:
+        comment: "Optional comments."
+        entries:
+         -
+            name: "default_name_5"
+            prefix: "enable"
+            status: "enable"
+        id:  "8"
+        name: "default_name_9"

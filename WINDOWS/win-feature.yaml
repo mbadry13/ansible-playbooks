@@ -1,0 +1,8 @@
+---
+- name: install win feature
+  hosts: all
+  tasks:
+    - name: Enable webserver role on {{ ansible_hostname }}
+      win_feature:
+        name: Web-Server
+        state: present

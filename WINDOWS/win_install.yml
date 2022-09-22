@@ -1,0 +1,9 @@
+---
+- name: Install/Remove A Package On Windows
+  hosts: all
+  tasks:
+   - name: Install/remove a package on "{{ ansible_hostname }}"
+     win_chocolatey:
+       name: "{{ package_name }}"
+       state: "{{ state }}"
+

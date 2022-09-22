@@ -1,0 +1,12 @@
+---
+- name: Accessing The Active Diretory on  {{ ansible_hostname }}
+  hosts: all
+  tasks:
+    - name: Ensure user availablity status
+      win_domain_user:
+        name: "{{user}}"
+        firstname: "{{first_name}}"
+        surname: "{{surename}}"
+        company: BobCo
+        password: "{{password}}"
+        state: "{{state}}"

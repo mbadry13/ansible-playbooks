@@ -1,0 +1,20 @@
+---
+- name: install php libraries
+  hosts: all
+  become: true
+  gather_facts: false
+  tasks:
+    - name: enable repo
+      yum:
+        name:
+          - php
+          - php-bz2
+          - php-mysql
+          - php-curl
+          - php-gd
+          - php-intl
+          - php-common
+          - php-mbstring
+          - php-xml
+        state: latest
+      when: inventory_hostname == vm_name

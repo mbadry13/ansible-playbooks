@@ -1,0 +1,12 @@
+---
+- name: install packages using MSI
+  hosts: all
+  tasks:
+   - name: Download the MSI on {{ ansible_hostname }}
+     win_get_url:
+       url: https://www.7-zip.org/a/7z1900-x64.msi
+       dest: C:\packages
+   - name: install the MSI on {{ ansible_hostname }}
+     win_package:
+       path: C:\packages\7z1900-x64.msi
+       state: present

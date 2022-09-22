@@ -1,0 +1,33 @@
+--- 
+- hosts: all
+  name: enable EPEL and Extra repositories
+  become: true
+  gather_facts: false
+  tasks:
+    - name: Configure EPEL on "{{ ansible_hostname }}"
+      template:
+        src: centos.repo.j2
+        dest: /etc/yum.repos.d/centos.repo
+      when: inventory_hostname == vm_name
+
+    - name: Install EPEL repo.
+      yum:
+        name: https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+        state: present
+      when: inventory_hostname == vm_name
+    - name: install yum utils
+      yum:
+        name: yum-utils
+        state: latest
+      when: inventory_hostname == vm_name
+    - name: Install remi repo
+      yum:
+        name: http://rpms.remirepo.net/enterprise/remi-release-7.rpm 
+        state: present
+      when: inventory_hostname == vm_name
+    - name: disable php7
+      command: yum-config-manager --disable 'remi-php*'
+      when: inventory_hostname == vm_name
+    - name: enable php8
+      command: yum-config-manager --enable remi-php80
+      when: inventory_hostname == vm_name

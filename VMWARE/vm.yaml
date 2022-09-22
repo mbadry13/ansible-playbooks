@@ -1,0 +1,21 @@
+---
+- name: Create a VM from a template
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  tasks:
+  - name: Clone the template
+    vmware_guest:
+      hostname: "{{vCenter_hostname}}"
+      username: "{{username}}"
+      password: "{{password}}"
+      validate_certs: False
+      name: "{{vm_name}}"
+      template: "{{template}}"
+      datacenter: "HPE-LAB-DC"
+      folder: "LABVM"
+      state: poweredon
+      wait_for_ip_address: yes
+    register: var
+
+#  - debug: msg="{{var.ansible_facts.hw_eth0.ipaddresses[0]}}

@@ -1,0 +1,17 @@
+---
+- name: Running a playbok to ensure a package status on a linux machine
+  hosts: all
+  gather_facts: yes
+  become: true
+  tasks:
+  - name: Ensure package status on "{{ ansible_hostname }}"
+    yum:
+      name: "{{ package_name }}"
+      state: "{{package_state }}"
+    when: ansible_facts['os_family'] == "RedHat"
+  - name: Ensure Package status on "{{ ansible_hostname }}"
+    apt:
+      name: "{{ package_name_ubuntu }}"
+      state: "{{package_state }}"
+    when: ansible_facts['os_family'] == "Ubuntu"
+# don't change

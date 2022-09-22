@@ -1,0 +1,35 @@
+---
+- name: Playbook to automate SSH on clients
+  hosts: all
+  gather_facts: no
+  tasks:
+  - name: Configure SSH on "{{ ansible_hostname }}"
+    template:
+      src: sshd_config.j2
+      dest: /etc/ssh/sshd_config
+    when: inventory_hostname == vm_name
+  - name: restart the SSH service on "{{ ansible_hostname }}"
+    service:
+      name: sshd
+      state: restarted
+    when: inventory_hostname == vm_name
+  - name: install apache webserver on "{{ ansible_hostname }}"
+    yum:
+      name: httpd
+      state: latest
+    when: inventory_hostname == vm_name
+    # - name: copy index file on "{{ ansible_hostname }}"
+    #   template:
+    # src: remi82.repo.j2
+    #  dest: /etc/yum.repos.d/remi82.repo
+    #when: inventory_hostname == vm_name
+  - name: start the webserver on "{{ ansible_hostname }}"
+    service:
+      name: httpd
+      state: restarted
+    when: inventory_hostname == vm_name
+  - name: configure firewall on "{{ ansible_hostname }}"
+    service:
+      name: firewalld.service
+      state: stopped
+    when: inventory_hostname == vm_name

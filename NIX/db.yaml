@@ -1,0 +1,38 @@
+---
+- name: Configure and install database
+  hosts: all
+  gather_facts: false
+  become: true
+  tasks:
+    - name: install maria-db
+      yum:
+        name:
+          - mariadb-server
+          - MySQL-python.x86_64
+          - wget
+          - unzip
+        state: latest
+      when: inventory_hostname == vm_name
+    - name: start mariadb service
+      service:
+        name: mariadb
+        state: started
+        enabled: true
+      when: inventory_hostname == vm_name
+    - name: mysql-root-password
+      mysql_user:
+        login_user: root
+        login_password: P@ssw0rd
+        user: root
+        check_implicit_admin: true
+        password: P@ssw0rd
+        host: localhost
+      when: inventory_hostname == vm_name
+    - name: create wordpress database
+      command: mysqladmin -u root -pP@ssw0rd create wp
+      when: inventory_hostname == vm_name
+    - name: restart apache
+      service:
+        name: httpd
+        state: restarted
+      when: inventory_hostname == vm_name

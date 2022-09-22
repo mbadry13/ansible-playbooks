@@ -1,0 +1,41 @@
+---
+- hosts: all
+  become: yes
+  gather_facts: false
+  tasks:
+    - name: edit hosts file for "{{ansible_hostname}}"
+      shell:
+        cmd: echo "10.2.250.174 satellitevm1.poc.org" >> /etc/hosts
+      when: inventory_hostname == vm_name
+    - name: set hostname
+      hostname:
+        name: "{{vm_name}}"
+      when: inventory_hostname == vm_name
+
+    - name: Download and install a copy of the CA Certificate for the Red Hat Satellite 6 server
+      yum:
+        disable_gpg_check: yes
+        name: http://10.2.250.174/pub/katello-ca-consumer-latest.noarch.rpm
+        state: present
+      when: inventory_hostname == vm_name
+
+    - name: Setting enabled=1 in subscription-manager.conf
+      lineinfile:
+        path: /etc/yum/pluginconf.d/subscription-manager.conf
+        regexp: '^enabled'
+        line: 'enabled=1'
+      when: inventory_hostname == vm_name
+    - name: Setting enabled=0 in rhnplugin.conf
+      lineinfile:
+        path: /etc/yum/pluginconf.d/rhnplugin.conf
+        regexp: '^enabled'
+        line: 'enabled=0'
+      when: inventory_hostname == vm_name
+    - name: Register with activationkey matching Red Hat Enterprise Server Version 7
+      redhat_subscription:
+        state: present
+        activationkey: RH7
+        org_id: MANNAI_LAB
+      when: inventory_hostname == vm_name
+
+

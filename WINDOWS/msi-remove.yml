@@ -1,0 +1,8 @@
+---
+- name: install packages using MSI
+  hosts: all
+  tasks:
+   - name: Remove the MSI on {{ ansible_hostname }}
+     win_package:
+       path: "{{ path }}"
+       state: absent

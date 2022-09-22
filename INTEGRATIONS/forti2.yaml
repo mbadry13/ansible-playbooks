@@ -1,0 +1,15 @@
+- hosts: all
+  collections:
+    - fortinet.fortios
+  connection: httpapi
+  vars:
+   vdom: "root"
+   ansible_httpapi_use_ssl: yes
+   ansible_httpapi_validate_certs: no
+   ansible_httpapi_port: 443
+  tasks:
+  - name: Configure global heuristic options.
+    fortios_antivirus_heuristic:
+      vdom:  "{{ vdom }}"
+      antivirus_heuristic:
+        mode: "pass"

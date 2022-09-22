@@ -1,0 +1,7 @@
+[fortigates]
+fortigate01 ansible_host=192.168.195 ansible_user="admin" ansible_password="P@ssw0rd"
+
+[fortigates:vars]
+ansible_network_os=fortinet.fortios.fortios
+#discovered_interpreter_python= /usr/bin/python
+

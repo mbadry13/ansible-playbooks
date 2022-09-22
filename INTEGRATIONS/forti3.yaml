@@ -1,0 +1,20 @@
+- hosts: all
+  collections:
+    - fortinet.fortios
+  connection: httpapi
+  #  hosts: 192.168.195 
+  vars:
+    ansible_httpapi_port: 443
+    ansible_httpapi_use_ssl: true
+    ansible_httpapi_validate_certs: false
+    vdom: root
+  tasks:
+  - name: fortios_firewall_address
+    fortios_firewall_address:
+      vdom: root
+      state: present
+      firewall_address:
+        cache_ttl: 0
+        name: DC-FW-Forti-CNI-FG-08-17
+        subnet: 10.1.117.17 255.255.255.255
+        type: ipmask

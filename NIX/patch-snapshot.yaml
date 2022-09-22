@@ -1,0 +1,33 @@
+---
+- name: Create a snapshot before patching
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  tasks:
+  - name: Create the snapshot
+    vmware_guest_snapshot:
+      hostname: 10.2.250.110
+      username: labtest1@vsphere.local
+      password: Labtest@@2022
+      validate_certs: False
+      datacenter: "HPE-LAB-DC"
+      folder: "Mannai-Demo"
+      state: present
+      name: "{{ vm_name }}"
+      snapshot_name: ansible-snapshot-before-patching
+      description: snap1_description
+    delegate_to: localhost
+
+
+- name: Patching after snapshot
+  hosts: all
+  gather_facts: no
+  tasks:
+  - name: Patch the systems
+    yum:
+      name: "{{ patch_name }}"
+      state: latest
+    when: inventory_hostname == vm_name
+
+
+
