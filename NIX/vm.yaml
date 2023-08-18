@@ -22,15 +22,15 @@
       validate_certs: False
       name: "{{vm_name}}"
       template: "{{template}}"
-      datacenter: "HPE-LAB-DC"
-      folder: "Mannai-Demo"
+      datacenter: "DC1"
+      folder: "ansible"
       state: poweredon
-      networks:
-         - name: "VLAN_500"
-           type: static
-           device_type: vmxnet3
-           ip: 10.2.250.98
-           netmask: 255.255.255.0
-           gateway: 10.2.250.1
-           start_connected: yes
+    #  networks:
+     #    - name: "VLAN_500"
+      #     type: static
+       #    device_type: vmxnet3
+        #   ip: 10.2.250.98
+         #  netmask: 255.255.255.0
+          # gateway: 10.2.250.1
+           #start_connected: yes
       wait_for_ip_address: yes
