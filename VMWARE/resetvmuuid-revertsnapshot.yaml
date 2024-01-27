@@ -1,0 +1,222 @@
+---
+- name: Playbook to revert Esxi VMs to their snapshots and reset the UUID of the VM
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Generate New UUID for the VMs
+      shell:  uuidgen | perl -ne '{ s/-//g; s/(.{2})/\1 /g; substr($_,23,1,"-"); print ; }' > /tmp/PODMAN.txt
+    - name: Generate New UUID for the VMs
+      shell:  uuidgen | perl -ne '{ s/-//g; s/(.{2})/\1 /g; substr($_,23,1,"-"); print ; }' > /tmp/Jumping.txt
+
+- name: Running the original playbook on the esxi host
+  hosts: 192.168.18.24
+  gather_facts: false
+  vars:
+    podman_uuid_digits: "{{ lookup('file', '/tmp/PODMAN.txt') | regex_replace('\n', '') }}"
+    podman_uuid: $(vim-cmd vmsvc/getallvms | grep PODMAN | awk '{print $1}')
+    Jumping_uuid_digits: "{{ lookup('file', '/tmp/Jumping.txt') | regex_replace('\n', '') }}"
+    Jumping_uuid: $(vim-cmd vmsvc/getallvms | grep Jumping | awk '{print $1}')
+  vars_prompt:
+    - name: PODMAN
+      prompt: "Do you want to revert and reset PODMAN VM? (yes/no)"
+      private: no
+    - name: Jumping
+      prompt: "Do you want to revert and reset Jumping VM? (yes/no)"
+      private: no
+
+  tasks:
+
+    - name: Powering off the PODMAN VM
+      shell: vim-cmd vmsvc/power.off $(vim-cmd vmsvc/getallvms | grep PODMAN | awk '{print $1}')
+      async: 30
+      poll: 0
+      when: PODMAN.lower() == 'yes'
+
+    - name: backing up the VMX file for PODMAN VM
+      shell: cp /vmfs/volumes/datastore1/PODMAN/PODMAN.vmx /backup
+      when: PODMAN.lower() == 'yes'
+
+    - name: Revert PODMAN VM SNAPSHOT
+      shell: "/bin/vim-cmd vmsvc/snapshot.revert {{podman_uuid}} 1 VIMCMD_ROOT_SESSION: root:P@ssw0rd@localhost"
+      when: PODMAN.lower() == 'yes'
+
+
+    - name: delete the uuid from the vmx file for PODMAN VM
+      shell: sed -i '/uuid.location/d' /vmfs/volumes/datastore1/PODMAN/PODMAN.vmx
+      when: PODMAN.lower() == 'yes'
+
+
+    - name: delete the bios uuid for PODMAN VMx file
+      shell: sed -i '/uuid.bios/d' /vmfs/volumes/datastore1/PODMAN/PODMAN.vmx  
+      when: PODMAN.lower() == 'yes'
+
+
+    - name: copy the uuid of the PODMAN VM to the ESXI TMP Directory
+      copy:
+        src: /tmp/PODMAN.txt
+        dest: /tmp/PODMAN.txt
+      when: PODMAN.lower() == 'yes'
+
+
+    - name: update uuid BIOS  on the VMX file for the PODMAN VM
+      lineinfile:
+        path: /vmfs/volumes/datastore1/PODMAN/PODMAN.vmx
+        line: 'uuid.bios = "{{ podman_uuid_digits }}"'
+      when: PODMAN.lower() == 'yes'
+
+
+    - name: update uuid Location for PODMAN VM
+      lineinfile:
+        path: /vmfs/volumes/datastore1/PODMAN/PODMAN.vmx
+        line: 'uuid.location = "{{ podman_uuid_digits }}"'
+      when: PODMAN.lower() == 'yes'
+
+
+    - name: unregister the PODMAN VM
+      shell: vim-cmd vmsvc/unregister $(vim-cmd vmsvc/getallvms | grep PODMAN | awk '{print $1}')
+      when: PODMAN.lower() == 'yes'
+
+    - name: register the PODMAN vm
+      shell: "vim-cmd solo/registervm /vmfs/volumes/datastore1/PODMAN/PODMAN.vmx"
+      when: PODMAN.lower() == 'yes'
+
+
+    - name: Power On PODMAN VM
+      shell: vim-cmd vmsvc/power.on $(vim-cmd vmsvc/getallvms | grep PODMAN | awk '{print $1}')
+      async: 30
+      poll: 0
+      when: PODMAN.lower() == 'yes'
+
+
+    - name: pause
+      pause:
+        seconds: 30
+      when: PODMAN.lower() == 'yes'
+
+
+    - name: Get the Pending powering on question ID
+      shell: vim-cmd vmsvc/message  $(vim-cmd vmsvc/getallvms | grep PODMAN | awk '{print $1}')  | awk 'NR==1 { gsub(/[^0-9]/, ""); print }'
+      register: message
+      when: PODMAN.lower() == 'yes'
+
+
+    - name:
+      debug:
+        var: message.stdout
+      when: PODMAN.lower() == 'yes'
+
+
+    - name: pause for powering on
+      pause:
+        seconds: 30
+      when: PODMAN.lower() == 'yes'
+
+    - name: Get the PODMAN VM New ID
+      shell: vim-cmd vmsvc/getallvms | grep PODMAN | awk '{print $1}'
+      register: vm_id
+      when: PODMAN.lower() == 'yes'
+
+
+    - name: answer the question for PODMAN VM to be powerd on
+      shell: "vim-cmd vmsvc/message {{ vm_id.stdout }} {{ message.stdout }} 1 "
+      when: PODMAN.lower() == 'yes'
+
+
+
+    - name: Powering off the Jumping VM
+      shell: vim-cmd vmsvc/power.off $(vim-cmd vmsvc/getallvms | grep Jumping | awk '{print $1}')
+      async: 30
+      poll: 0
+      when: Jumping.lower() == 'yes'
+
+    - name: backing up the VMX file for Jumping VM
+      shell: cp /vmfs/volumes/datastore1/Jumping/Jumping.vmx /backup
+      when: Jumping.lower() == 'yes'
+
+    - name: Revert Jumping VM SNAPSHOT
+      shell: "/bin/vim-cmd vmsvc/snapshot.revert {{Jumping_uuid}} 1 VIMCMD_ROOT_SESSION: root:P@ssw0rd@localhost"
+      when: Jumping.lower() == 'yes'
+
+
+    - name: delete the uuid from the vmx file for Jumping VM
+      shell: sed -i '/uuid.location/d' /vmfs/volumes/datastore1/Jumping/Jumping.vmx
+      when: Jumping.lower() == 'yes'
+
+
+    - name: delete the bios uuid for Jumping VMx file
+      shell: sed -i '/uuid.bios/d' /vmfs/volumes/datastore1/Jumping/Jumping.vmx
+      when: Jumping.lower() == 'yes'
+
+
+    - name: copy the uuid of the Jumping VM to the ESXI TMP Directory
+      copy:
+        src: /tmp/Jumping.txt
+        dest: /tmp/Jumping.txt
+      when: Jumping.lower() == 'yes'
+
+
+    - name: update uuid BIOS  on the VMX file for the Jumping VM
+      lineinfile:
+        path: /vmfs/volumes/datastore1/Jumping/Jumping.vmx
+        line: 'uuid.bios = "{{ Jumping_uuid_digits }}"'
+      when: Jumping.lower() == 'yes'
+
+
+    - name: update uuid Location for Jumping VM
+      lineinfile:
+        path: /vmfs/volumes/datastore1/Jumping/Jumping.vmx
+        line: 'uuid.location = "{{ Jumping_uuid_digits }}"'
+      when: Jumping.lower() == 'yes'
+
+
+    - name: unregister the Jumping VM
+      shell: vim-cmd vmsvc/unregister $(vim-cmd vmsvc/getallvms | grep Jumping | awk '{print $1}')
+      when: Jumping.lower() == 'yes'
+
+    - name: register the Jumping vm
+      shell: "vim-cmd solo/registervm /vmfs/volumes/datastore1/Jumping/Jumping.vmx"
+      when: Jumping.lower() == 'yes'
+
+
+    - name: Power On Jumping VM
+      shell: vim-cmd vmsvc/power.on $(vim-cmd vmsvc/getallvms | grep Jumping | awk '{print $1}')
+      async: 30
+      poll: 0
+      when: Jumping.lower() == 'yes'
+
+
+    - name: pause
+      pause:
+        seconds: 30
+      when: Jumping.lower() == 'yes'
+
+
+    - name: Get the Pending powering on question ID
+      shell: vim-cmd vmsvc/message  $(vim-cmd vmsvc/getallvms | grep Jumping | awk '{print $1}')  | awk 'NR==1 { gsub(/[^0-9]/, ""); print }'
+      register: message
+      when: Jumping.lower() == 'yes'
+
+
+    - name:
+      debug:
+        var: message.stdout
+      when: Jumping.lower() == 'yes'
+
+
+    - name: pause for powering on
+      pause:
+        seconds: 30
+      when: Jumping.lower() == 'yes'
+
+    - name: Get the Jumping VM New ID
+      shell: vim-cmd vmsvc/getallvms | grep Jumping | awk '{print $1}'
+      register: vm_id
+      when: Jumping.lower() == 'yes'
+
+
+    - name: answer the question for Jumping VM to be powerd on
+      shell: "vim-cmd vmsvc/message {{ vm_id.stdout }} {{ message.stdout }} 1 "
+      when: Jumping.lower() == 'yes'
+
+                                                                                                                        
+    
