@@ -79,11 +79,56 @@
     LAB-EX-FW_uuid_digits: "{{ lookup('file', '/tmp/LAB-EX-FW.txt') | regex_replace('\n', '') }}"
     LAB-EX-FW_uuid: $(vim-cmd vmsvc/getallvms | grep LAB-EX-FW | awk '{print $1}')
   vars_prompt:
-    - name: PODMAN
-      prompt: "Do you want to revert and reset PODMAN VM? (yes/no)"
+    - name: LAB-HELK
+      prompt: "Do you want to revert and reset LAB-HELK VM? (yes/no)"
       private: no
-    - name: Jumping
-      prompt: "Do you want to revert and reset Jumping VM? (yes/no)"
+    - name: LAB-HIVE
+      prompt: "Do you want to revert and reset LAB-HIVE VM? (yes/no)"
+      private: no
+    - name: LAB-CORT
+      prompt: "Do you want to revert and reset LAB-CORT VM? (yes/no)"
+      private: no
+    - name: LAB-MISP
+      prompt: "Do you want to revert and reset LAB-MISP VM? (yes/no)"
+      private: no
+    - name: LAB-CL1
+      prompt: "Do you want to revert and reset LAB-CL1 VM? (yes/no)"
+      private: no
+    - name: LAB-WEB
+      prompt: "Do you want to revert and reset LAB-WEB VM? (yes/no)"
+      private: no
+    - name: LAB-DB
+      prompt: "Do you want to revert and reset LAB-DB VM? (yes/no)"
+      private: no
+    - name: LAB-EXCH
+      prompt: "Do you want to revert and reset LAB-EXCH VM? (yes/no)"
+      private: no
+    - name: LAB-CL2
+      prompt: "Do you want to revert and reset LAB-CL2 VM? (yes/no)"
+      private: no
+    - name: LAB-WAPP
+      prompt: "Do you want to revert and reset LAB-WAPP VM? (yes/no)"
+      private: no
+    - name: LAB-AD1
+      prompt: "Do you want to revert and reset LAB-AD1 VM? (yes/no)"
+      private: no
+    - name: LAB-AD2
+      prompt: "Do you want to revert and reset LAB-AD2 VM? (yes/no)"
+      private: no
+    - name: LAB-DFW
+      prompt: "Do you want to revert and reset LAB-DFW VM? (yes/no)"
+      private: no
+    - name: LAB-RFW
+      prompt: "Do you want to revert and reset LAB-RFW VM? (yes/no)"
+      private: no
+    - name: LAB-EDR
+      prompt: "Do you want to revert and reset LAB-EDR VM? (yes/no)"
+      private: no
+    - name: LAB-DC-FW
+      prompt: "Do you want to revert and reset LAB-DC-FW VM? (yes/no)"
+      private: no
+    - name: LAB-EX-FW
+      prompt: "Do you want to revert and reset LAB-EX-FW VM? (yes/no)"
       private: no
 
   tasks:
