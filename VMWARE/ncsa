@@ -1,4 +1,4 @@
----
+
 - name: Playbook to revert Esxi VMs to their snapshots and reset the UUID of the VM
   hosts: localhost
   gather_facts: no
@@ -39,7 +39,7 @@
       shell:  uuidgen | perl -ne '{ s/-//g; s/(.{2})/\1 /g; substr($_,23,1,"-"); print ; }' > /tmp/LAB-EX-FW.txt
 
 - name: Running the original playbook on the esxi host
-  hosts: 192.168.18.24
+  hosts: esxi2
   gather_facts: false
   vars:
     LAB-HELK_uuid_digits: "{{ lookup('file', '/tmp/LAB-HELK.txt') | regex_replace('\n', '') }}"
@@ -133,197 +133,1685 @@
 
   tasks:
 
-    - name: Powering off the PODMAN VM
-      shell: vim-cmd vmsvc/power.off $(vim-cmd vmsvc/getallvms | grep PODMAN | awk '{print $1}')
+    - name: Powering off the LAB-HELK VM
+      shell: vim-cmd vmsvc/power.off $(vim-cmd vmsvc/getallvms | grep LAB-HELK | awk '{print $1}')
       async: 30
       poll: 0
-      when: PODMAN.lower() == 'yes'
+      when: LAB-HELK.lower() == 'yes'
 
-    - name: backing up the VMX file for PODMAN VM
-      shell: cp /vmfs/volumes/datastore1/PODMAN/PODMAN.vmx /backup
-      when: PODMAN.lower() == 'yes'
+    - name: backing up the VMX file for LAB-HELK VM
+      shell: cp /vmfs/volumes/datastore1/LAB-HELK/LAB-HELK.vmx /backup
+      when: LAB-HELK.lower() == 'yes'
 
-    - name: Revert PODMAN VM SNAPSHOT
-      shell: "/bin/vim-cmd vmsvc/snapshot.revert {{podman_uuid}} 1 VIMCMD_ROOT_SESSION: root:P@ssw0rd@localhost"
-      when: PODMAN.lower() == 'yes'
-
-
-    - name: delete the uuid from the vmx file for PODMAN VM
-      shell: sed -i '/uuid.location/d' /vmfs/volumes/datastore1/PODMAN/PODMAN.vmx
-      when: PODMAN.lower() == 'yes'
+    - name: Revert LAB-HELK VM SNAPSHOT
+      shell: "/bin/vim-cmd vmsvc/snapshot.revert {{LAB-HELK_uuid}} 1 VIMCMD_ROOT_SESSION: root:P@ssw0rd@localhost"
+      when: LAB-HELK.lower() == 'yes'
 
 
-    - name: delete the bios uuid for PODMAN VMx file
-      shell: sed -i '/uuid.bios/d' /vmfs/volumes/datastore1/PODMAN/PODMAN.vmx  
-      when: PODMAN.lower() == 'yes'
+    - name: delete the uuid from the vmx file for LAB-HELK VM
+      shell: sed -i '/uuid.location/d' /vmfs/volumes/datastore1/LAB-HELK/LAB-HELK.vmx
+      when: LAB-HELK.lower() == 'yes'
 
 
-    - name: copy the uuid of the PODMAN VM to the ESXI TMP Directory
+    - name: delete the bios uuid for LAB-HELK VMx file
+      shell: sed -i '/uuid.bios/d' /vmfs/volumes/datastore1/LAB-HELK/LAB-HELK.vmx  
+      when: LAB-HELK.lower() == 'yes'
+
+
+    - name: copy the uuid of the LAB-HELK VM to the ESXI TMP Directory
       copy:
-        src: /tmp/PODMAN.txt
-        dest: /tmp/PODMAN.txt
-      when: PODMAN.lower() == 'yes'
+        src: /tmp/LAB-HELK.txt
+        dest: /tmp/LAB-HELK.txt
+      when: LAB-HELK.lower() == 'yes'
 
 
-    - name: update uuid BIOS  on the VMX file for the PODMAN VM
+    - name: update uuid BIOS  on the VMX file for the LAB-HELK VM
       lineinfile:
-        path: /vmfs/volumes/datastore1/PODMAN/PODMAN.vmx
-        line: 'uuid.bios = "{{ podman_uuid_digits }}"'
-      when: PODMAN.lower() == 'yes'
+        path: /vmfs/volumes/datastore1/LAB-HELK/LAB-HELK.vmx
+        line: 'uuid.bios = "{{ LAB-HELK_uuid_digits }}"'
+      when: LAB-HELK.lower() == 'yes'
 
 
-    - name: update uuid Location for PODMAN VM
+    - name: update uuid Location for LAB-HELK VM
       lineinfile:
-        path: /vmfs/volumes/datastore1/PODMAN/PODMAN.vmx
-        line: 'uuid.location = "{{ podman_uuid_digits }}"'
-      when: PODMAN.lower() == 'yes'
+        path: /vmfs/volumes/datastore1/LAB-HELK/LAB-HELK.vmx
+        line: 'uuid.location = "{{ LAB-HELK_uuid_digits }}"'
+      when: LAB-HELK.lower() == 'yes'
 
 
-    - name: unregister the PODMAN VM
-      shell: vim-cmd vmsvc/unregister $(vim-cmd vmsvc/getallvms | grep PODMAN | awk '{print $1}')
-      when: PODMAN.lower() == 'yes'
+    - name: unregister the LAB-HELK VM
+      shell: vim-cmd vmsvc/unregister $(vim-cmd vmsvc/getallvms | grep LAB-HELK | awk '{print $1}')
+      when: LAB-HELK.lower() == 'yes'
 
-    - name: register the PODMAN vm
-      shell: "vim-cmd solo/registervm /vmfs/volumes/datastore1/PODMAN/PODMAN.vmx"
-      when: PODMAN.lower() == 'yes'
+    - name: register the LAB-HELK vm
+      shell: "vim-cmd solo/registervm /vmfs/volumes/datastore1/LAB-HELK/LAB-HELK.vmx"
+      when: LAB-HELK.lower() == 'yes'
 
 
-    - name: Power On PODMAN VM
-      shell: vim-cmd vmsvc/power.on $(vim-cmd vmsvc/getallvms | grep PODMAN | awk '{print $1}')
+    - name: Power On LAB-HELK VM
+      shell: vim-cmd vmsvc/power.on $(vim-cmd vmsvc/getallvms | grep LAB-HELK | awk '{print $1}')
       async: 30
       poll: 0
-      when: PODMAN.lower() == 'yes'
+      when: LAB-HELK.lower() == 'yes'
 
 
     - name: pause
       pause:
         seconds: 30
-      when: PODMAN.lower() == 'yes'
+      when: LAB-HELK.lower() == 'yes'
 
 
     - name: Get the Pending powering on question ID
-      shell: vim-cmd vmsvc/message  $(vim-cmd vmsvc/getallvms | grep PODMAN | awk '{print $1}')  | awk 'NR==1 { gsub(/[^0-9]/, ""); print }'
+      shell: vim-cmd vmsvc/message  $(vim-cmd vmsvc/getallvms | grep LAB-HELK | awk '{print $1}')  | awk 'NR==1 { gsub(/[^0-9]/, ""); print }'
       register: message
-      when: PODMAN.lower() == 'yes'
+      when: LAB-HELK.lower() == 'yes'
 
 
     - name:
       debug:
         var: message.stdout
-      when: PODMAN.lower() == 'yes'
+      when: LAB-HELK.lower() == 'yes'
 
 
     - name: pause for powering on
       pause:
         seconds: 30
-      when: PODMAN.lower() == 'yes'
+      when: LAB-HELK.lower() == 'yes'
 
-    - name: Get the PODMAN VM New ID
-      shell: vim-cmd vmsvc/getallvms | grep PODMAN | awk '{print $1}'
+    - name: Get the LAB-HELK VM New ID
+      shell: vim-cmd vmsvc/getallvms | grep LAB-HELK | awk '{print $1}'
       register: vm_id
-      when: PODMAN.lower() == 'yes'
+      when: LAB-HELK.lower() == 'yes'
 
 
-    - name: answer the question for PODMAN VM to be powerd on
+    - name: answer the question for LAB-HELK VM to be powerd on
       shell: "vim-cmd vmsvc/message {{ vm_id.stdout }} {{ message.stdout }} 1 "
-      when: PODMAN.lower() == 'yes'
+      when: LAB-HELK.lower() == 'yes'
 
 
 
-    - name: Powering off the Jumping VM
-      shell: vim-cmd vmsvc/power.off $(vim-cmd vmsvc/getallvms | grep Jumping | awk '{print $1}')
+
+
+
+    - name: Powering off the LAB-HIVE VM
+      shell: vim-cmd vmsvc/power.off $(vim-cmd vmsvc/getallvms | grep LAB-HIVE | awk '{print $1}')
       async: 30
       poll: 0
-      when: Jumping.lower() == 'yes'
+      when: LAB-HIVE.lower() == 'yes'
 
-    - name: backing up the VMX file for Jumping VM
-      shell: cp /vmfs/volumes/datastore1/Jumping/Jumping.vmx /backup
-      when: Jumping.lower() == 'yes'
+    - name: backing up the VMX file for LAB-HIVE VM
+      shell: cp /vmfs/volumes/datastore1/LAB-HIVE/LAB-HIVE.vmx /backup
+      when: LAB-HIVE.lower() == 'yes'
 
-    - name: Revert Jumping VM SNAPSHOT
-      shell: "/bin/vim-cmd vmsvc/snapshot.revert {{Jumping_uuid}} 1 VIMCMD_ROOT_SESSION: root:P@ssw0rd@localhost"
-      when: Jumping.lower() == 'yes'
-
-
-    - name: delete the uuid from the vmx file for Jumping VM
-      shell: sed -i '/uuid.location/d' /vmfs/volumes/datastore1/Jumping/Jumping.vmx
-      when: Jumping.lower() == 'yes'
+    - name: Revert LAB-HIVE VM SNAPSHOT
+      shell: "/bin/vim-cmd vmsvc/snapshot.revert {{LAB-HIVE_uuid}} 1 VIMCMD_ROOT_SESSION: root:P@ssw0rd@localhost"
+      when: LAB-HIVE.lower() == 'yes'
 
 
-    - name: delete the bios uuid for Jumping VMx file
-      shell: sed -i '/uuid.bios/d' /vmfs/volumes/datastore1/Jumping/Jumping.vmx
-      when: Jumping.lower() == 'yes'
+    - name: delete the uuid from the vmx file for LAB-HIVE VM
+      shell: sed -i '/uuid.location/d' /vmfs/volumes/datastore1/LAB-HIVE/LAB-HIVE.vmx
+      when: LAB-HIVE.lower() == 'yes'
 
 
-    - name: copy the uuid of the Jumping VM to the ESXI TMP Directory
+    - name: delete the bios uuid for LAB-HIVE VMx file
+      shell: sed -i '/uuid.bios/d' /vmfs/volumes/datastore1/LAB-HIVE/LAB-HIVE.vmx
+      when: LAB-HIVE.lower() == 'yes'
+
+
+    - name: copy the uuid of the LAB-HIVE VM to the ESXI TMP Directory
       copy:
-        src: /tmp/Jumping.txt
-        dest: /tmp/Jumping.txt
-      when: Jumping.lower() == 'yes'
+        src: /tmp/LAB-HIVE.txt
+        dest: /tmp/LAB-HIVE.txt
+      when: LAB-HIVE.lower() == 'yes'
 
 
-    - name: update uuid BIOS  on the VMX file for the Jumping VM
+    - name: update uuid BIOS  on the VMX file for the LAB-HIVE VM
       lineinfile:
-        path: /vmfs/volumes/datastore1/Jumping/Jumping.vmx
-        line: 'uuid.bios = "{{ Jumping_uuid_digits }}"'
-      when: Jumping.lower() == 'yes'
+        path: /vmfs/volumes/datastore1/LAB-HIVE/LAB-HIVE.vmx
+        line: 'uuid.bios = "{{ LAB-HIVE_uuid_digits }}"'
+      when: LAB-HIVE.lower() == 'yes'
 
 
-    - name: update uuid Location for Jumping VM
+    - name: update uuid Location for LAB-HIVE VM
       lineinfile:
-        path: /vmfs/volumes/datastore1/Jumping/Jumping.vmx
-        line: 'uuid.location = "{{ Jumping_uuid_digits }}"'
-      when: Jumping.lower() == 'yes'
+        path: /vmfs/volumes/datastore1/LAB-HIVE/LAB-HIVE.vmx
+        line: 'uuid.location = "{{ LAB-HIVE_uuid_digits }}"'
+      when: LAB-HIVE.lower() == 'yes'
 
 
-    - name: unregister the Jumping VM
-      shell: vim-cmd vmsvc/unregister $(vim-cmd vmsvc/getallvms | grep Jumping | awk '{print $1}')
-      when: Jumping.lower() == 'yes'
+    - name: unregister the LAB-HIVE VM
+      shell: vim-cmd vmsvc/unregister $(vim-cmd vmsvc/getallvms | grep LAB-HIVE | awk '{print $1}')
+      when: LAB-HIVE.lower() == 'yes'
 
-    - name: register the Jumping vm
-      shell: "vim-cmd solo/registervm /vmfs/volumes/datastore1/Jumping/Jumping.vmx"
-      when: Jumping.lower() == 'yes'
+    - name: register the LAB-HIVE vm
+      shell: "vim-cmd solo/registervm /vmfs/volumes/datastore1/LAB-HIVE/LAB-HIVE.vmx"
+      when: LAB-HIVE.lower() == 'yes'
 
 
-    - name: Power On Jumping VM
-      shell: vim-cmd vmsvc/power.on $(vim-cmd vmsvc/getallvms | grep Jumping | awk '{print $1}')
+    - name: Power On LAB-HIVE VM
+      shell: vim-cmd vmsvc/power.on $(vim-cmd vmsvc/getallvms | grep LAB-HIVE | awk '{print $1}')
       async: 30
       poll: 0
-      when: Jumping.lower() == 'yes'
+      when: LAB-HIVE.lower() == 'yes'
 
 
     - name: pause
       pause:
         seconds: 30
-      when: Jumping.lower() == 'yes'
+      when: LAB-HIVE.lower() == 'yes'
 
 
     - name: Get the Pending powering on question ID
-      shell: vim-cmd vmsvc/message  $(vim-cmd vmsvc/getallvms | grep Jumping | awk '{print $1}')  | awk 'NR==1 { gsub(/[^0-9]/, ""); print }'
+      shell: vim-cmd vmsvc/message  $(vim-cmd vmsvc/getallvms | grep LAB-HIVE | awk '{print $1}')  | awk 'NR==1 { gsub(/[^0-9]/, ""); print }'
       register: message
-      when: Jumping.lower() == 'yes'
+      when: LAB-HIVE.lower() == 'yes'
 
 
     - name:
       debug:
         var: message.stdout
-      when: Jumping.lower() == 'yes'
+      when: LAB-HIVE.lower() == 'yes'
 
 
     - name: pause for powering on
       pause:
         seconds: 30
-      when: Jumping.lower() == 'yes'
+      when: LAB-HIVE.lower() == 'yes'
 
-    - name: Get the Jumping VM New ID
-      shell: vim-cmd vmsvc/getallvms | grep Jumping | awk '{print $1}'
+    - name: Get the LAB-HIVE VM New ID
+      shell: vim-cmd vmsvc/getallvms | grep LAB-HIVE | awk '{print $1}'
       register: vm_id
-      when: Jumping.lower() == 'yes'
+      when: LAB-HIVE.lower() == 'yes'
 
 
-    - name: answer the question for Jumping VM to be powerd on
+    - name: answer the question for LAB-HIVE VM to be powerd on
       shell: "vim-cmd vmsvc/message {{ vm_id.stdout }} {{ message.stdout }} 1 "
-      when: Jumping.lower() == 'yes'
+      when: LAB-HIVE.lower() == 'yes'
 
                                                                                                                         
     
+
+
+    - name: Powering off the LAB-CORT VM
+      shell: vim-cmd vmsvc/power.off $(vim-cmd vmsvc/getallvms | grep LAB-CORT | awk '{print $1}')
+      async: 30
+      poll: 0
+      when: LAB-CORT.lower() == 'yes'
+
+    - name: backing up the VMX file for LAB-CORT VM
+      shell: cp /vmfs/volumes/datastore1/LAB-CORT/LAB-CORT.vmx /backup
+      when: LAB-CORT.lower() == 'yes'
+
+    - name: Revert LAB-CORT VM SNAPSHOT
+      shell: "/bin/vim-cmd vmsvc/snapshot.revert {{LAB-CORT_uuid}} 1 VIMCMD_ROOT_SESSION: root:P@ssw0rd@localhost"
+      when: LAB-CORT.lower() == 'yes'
+
+
+    - name: delete the uuid from the vmx file for LAB-CORT VM
+      shell: sed -i '/uuid.location/d' /vmfs/volumes/datastore1/LAB-CORT/LAB-CORT.vmx
+      when: LAB-CORT.lower() == 'yes'
+
+
+    - name: delete the bios uuid for LAB-CORT VMx file
+      shell: sed -i '/uuid.bios/d' /vmfs/volumes/datastore1/LAB-CORT/LAB-CORT.vmx
+      when: LAB-CORT.lower() == 'yes'
+
+
+    - name: copy the uuid of the LAB-CORT VM to the ESXI TMP Directory
+      copy:
+        src: /tmp/LAB-CORT.txt
+        dest: /tmp/LAB-CORT.txt
+      when: LAB-CORT.lower() == 'yes'
+
+
+    - name: update uuid BIOS  on the VMX file for the LAB-CORT VM
+      lineinfile:
+        path: /vmfs/volumes/datastore1/LAB-CORT/LAB-CORT.vmx
+        line: 'uuid.bios = "{{ LAB-CORT_uuid_digits }}"'
+      when: LAB-CORT.lower() == 'yes'
+
+
+    - name: update uuid Location for LAB-CORT VM
+      lineinfile:
+        path: /vmfs/volumes/datastore1/LAB-CORT/LAB-CORT.vmx
+        line: 'uuid.location = "{{ LAB-CORT_uuid_digits }}"'
+      when: LAB-CORT.lower() == 'yes'
+
+
+    - name: unregister the LAB-CORT VM
+      shell: vim-cmd vmsvc/unregister $(vim-cmd vmsvc/getallvms | grep LAB-CORT | awk '{print $1}')
+      when: LAB-CORT.lower() == 'yes'
+
+    - name: register the LAB-CORT vm
+      shell: "vim-cmd solo/registervm /vmfs/volumes/datastore1/LAB-CORT/LAB-CORT.vmx"
+      when: LAB-CORT.lower() == 'yes'
+
+
+    - name: Power On LAB-CORT VM
+      shell: vim-cmd vmsvc/power.on $(vim-cmd vmsvc/getallvms | grep LAB-CORT | awk '{print $1}')
+      async: 30
+      poll: 0
+      when: LAB-CORT.lower() == 'yes'
+
+
+    - name: pause
+      pause:
+        seconds: 30
+      when: LAB-CORT.lower() == 'yes'
+
+
+    - name: Get the Pending powering on question ID
+      shell: vim-cmd vmsvc/message  $(vim-cmd vmsvc/getallvms | grep LAB-CORT | awk '{print $1}')  | awk 'NR==1 { gsub(/[^0-9]/, ""); print }'
+      register: message
+      when: LAB-CORT.lower() == 'yes'
+
+
+    - name:
+      debug:
+        var: message.stdout
+      when: LAB-CORT.lower() == 'yes'
+
+
+    - name: pause for powering on
+      pause:
+        seconds: 30
+      when: LAB-CORT.lower() == 'yes'
+
+    - name: Get the LAB-CORT VM New ID
+      shell: vim-cmd vmsvc/getallvms | grep LAB-CORT | awk '{print $1}'
+      register: vm_id
+      when: LAB-CORT.lower() == 'yes'
+
+
+    - name: answer the question for LAB-CORT VM to be powerd on
+      shell: "vim-cmd vmsvc/message {{ vm_id.stdout }} {{ message.stdout }} 1 "
+      when: LAB-CORT.lower() == 'yes'
+
+                                                                                                                        
+    
+
+
+
+    - name: Powering off the LAB-MISP VM
+      shell: vim-cmd vmsvc/power.off $(vim-cmd vmsvc/getallvms | grep LAB-MISP | awk '{print $1}')
+      async: 30
+      poll: 0
+      when: LAB-MISP.lower() == 'yes'
+
+    - name: backing up the VMX file for LAB-MISP VM
+      shell: cp /vmfs/volumes/datastore1/LAB-MISP/LAB-MISP.vmx /backup
+      when: LAB-MISP.lower() == 'yes'
+
+    - name: Revert LAB-MISP VM SNAPSHOT
+      shell: "/bin/vim-cmd vmsvc/snapshot.revert {{LAB-MISP_uuid}} 1 VIMCMD_ROOT_SESSION: root:P@ssw0rd@localhost"
+      when: LAB-MISP.lower() == 'yes'
+
+
+    - name: delete the uuid from the vmx file for LAB-MISP VM
+      shell: sed -i '/uuid.location/d' /vmfs/volumes/datastore1/LAB-MISP/LAB-MISP.vmx
+      when: LAB-MISP.lower() == 'yes'
+
+
+    - name: delete the bios uuid for LAB-MISP VMx file
+      shell: sed -i '/uuid.bios/d' /vmfs/volumes/datastore1/LAB-MISP/LAB-MISP.vmx
+      when: LAB-MISP.lower() == 'yes'
+
+
+    - name: copy the uuid of the LAB-MISP VM to the ESXI TMP Directory
+      copy:
+        src: /tmp/LAB-MISP.txt
+        dest: /tmp/LAB-MISP.txt
+      when: LAB-MISP.lower() == 'yes'
+
+
+    - name: update uuid BIOS  on the VMX file for the LAB-MISP VM
+      lineinfile:
+        path: /vmfs/volumes/datastore1/LAB-MISP/LAB-MISP.vmx
+        line: 'uuid.bios = "{{ LAB-MISP_uuid_digits }}"'
+      when: LAB-MISP.lower() == 'yes'
+
+
+    - name: update uuid Location for LAB-MISP VM
+      lineinfile:
+        path: /vmfs/volumes/datastore1/LAB-MISP/LAB-MISP.vmx
+        line: 'uuid.location = "{{ LAB-MISP_uuid_digits }}"'
+      when: LAB-MISP.lower() == 'yes'
+
+
+    - name: unregister the LAB-MISP VM
+      shell: vim-cmd vmsvc/unregister $(vim-cmd vmsvc/getallvms | grep LAB-MISP | awk '{print $1}')
+      when: LAB-MISP.lower() == 'yes'
+
+    - name: register the LAB-MISP vm
+      shell: "vim-cmd solo/registervm /vmfs/volumes/datastore1/LAB-MISP/LAB-MISP.vmx"
+      when: LAB-MISP.lower() == 'yes'
+
+
+    - name: Power On LAB-MISP VM
+      shell: vim-cmd vmsvc/power.on $(vim-cmd vmsvc/getallvms | grep LAB-MISP | awk '{print $1}')
+      async: 30
+      poll: 0
+      when: LAB-MISP.lower() == 'yes'
+
+
+    - name: pause
+      pause:
+        seconds: 30
+      when: LAB-MISP.lower() == 'yes'
+
+
+    - name: Get the Pending powering on question ID
+      shell: vim-cmd vmsvc/message  $(vim-cmd vmsvc/getallvms | grep LAB-MISP | awk '{print $1}')  | awk 'NR==1 { gsub(/[^0-9]/, ""); print }'
+      register: message
+      when: LAB-MISP.lower() == 'yes'
+
+
+    - name:
+      debug:
+        var: message.stdout
+      when: LAB-MISP.lower() == 'yes'
+
+
+    - name: pause for powering on
+      pause:
+        seconds: 30
+      when: LAB-MISP.lower() == 'yes'
+
+    - name: Get the LAB-MISP VM New ID
+      shell: vim-cmd vmsvc/getallvms | grep LAB-MISP | awk '{print $1}'
+      register: vm_id
+      when: LAB-MISP.lower() == 'yes'
+
+
+    - name: answer the question for LAB-MISP VM to be powerd on
+      shell: "vim-cmd vmsvc/message {{ vm_id.stdout }} {{ message.stdout }} 1 "
+      when: LAB-MISP.lower() == 'yes'
+
+                                                                                                                        
+    
+   
+
+    - name: Powering off the LAB-CL1 VM
+      shell: vim-cmd vmsvc/power.off $(vim-cmd vmsvc/getallvms | grep LAB-CL1 | awk '{print $1}')
+      async: 30
+      poll: 0
+      when: LAB-CL1.lower() == 'yes'
+
+    - name: backing up the VMX file for LAB-CL1 VM
+      shell: cp /vmfs/volumes/datastore1/LAB-CL1/LAB-CL1.vmx /backup
+      when: LAB-CL1.lower() == 'yes'
+
+    - name: Revert LAB-CL1 VM SNAPSHOT
+      shell: "/bin/vim-cmd vmsvc/snapshot.revert {{LAB-CL1_uuid}} 1 VIMCMD_ROOT_SESSION: root:P@ssw0rd@localhost"
+      when: LAB-CL1.lower() == 'yes'
+
+
+    - name: delete the uuid from the vmx file for LAB-CL1 VM
+      shell: sed -i '/uuid.location/d' /vmfs/volumes/datastore1/LAB-CL1/LAB-CL1.vmx
+      when: LAB-CL1.lower() == 'yes'
+
+
+    - name: delete the bios uuid for LAB-CL1 VMx file
+      shell: sed -i '/uuid.bios/d' /vmfs/volumes/datastore1/LAB-CL1/LAB-CL1.vmx
+      when: LAB-CL1.lower() == 'yes'
+
+
+    - name: copy the uuid of the LAB-CL1 VM to the ESXI TMP Directory
+      copy:
+        src: /tmp/LAB-CL1.txt
+        dest: /tmp/LAB-CL1.txt
+      when: LAB-CL1.lower() == 'yes'
+
+
+    - name: update uuid BIOS  on the VMX file for the LAB-CL1 VM
+      lineinfile:
+        path: /vmfs/volumes/datastore1/LAB-CL1/LAB-CL1.vmx
+        line: 'uuid.bios = "{{ LAB-CL1_uuid_digits }}"'
+      when: LAB-CL1.lower() == 'yes'
+
+
+    - name: update uuid Location for LAB-CL1 VM
+      lineinfile:
+        path: /vmfs/volumes/datastore1/LAB-CL1/LAB-CL1.vmx
+        line: 'uuid.location = "{{ LAB-CL1_uuid_digits }}"'
+      when: LAB-CL1.lower() == 'yes'
+
+
+    - name: unregister the LAB-CL1 VM
+      shell: vim-cmd vmsvc/unregister $(vim-cmd vmsvc/getallvms | grep LAB-CL1 | awk '{print $1}')
+      when: LAB-CL1.lower() == 'yes'
+
+    - name: register the LAB-CL1 vm
+      shell: "vim-cmd solo/registervm /vmfs/volumes/datastore1/LAB-CL1/LAB-CL1.vmx"
+      when: LAB-CL1.lower() == 'yes'
+
+
+    - name: Power On LAB-CL1 VM
+      shell: vim-cmd vmsvc/power.on $(vim-cmd vmsvc/getallvms | grep LAB-CL1 | awk '{print $1}')
+      async: 30
+      poll: 0
+      when: LAB-CL1.lower() == 'yes'
+
+
+    - name: pause
+      pause:
+        seconds: 30
+      when: LAB-CL1.lower() == 'yes'
+
+
+    - name: Get the Pending powering on question ID
+      shell: vim-cmd vmsvc/message  $(vim-cmd vmsvc/getallvms | grep LAB-CL1 | awk '{print $1}')  | awk 'NR==1 { gsub(/[^0-9]/, ""); print }'
+      register: message
+      when: LAB-CL1.lower() == 'yes'
+
+
+    - name:
+      debug:
+        var: message.stdout
+      when: LAB-CL1.lower() == 'yes'
+
+
+    - name: pause for powering on
+      pause:
+        seconds: 30
+      when: LAB-CL1.lower() == 'yes'
+
+    - name: Get the LAB-CL1 VM New ID
+      shell: vim-cmd vmsvc/getallvms | grep LAB-CL1 | awk '{print $1}'
+      register: vm_id
+      when: LAB-CL1.lower() == 'yes'
+
+
+    - name: answer the question for LAB-CL1 VM to be powerd on
+      shell: "vim-cmd vmsvc/message {{ vm_id.stdout }} {{ message.stdout }} 1 "
+      when: LAB-CL1.lower() == 'yes'
+
+                                                                                                                        
+    
+                                                                                
+    
+
+    - name: Powering off the LAB-WEB VM
+      shell: vim-cmd vmsvc/power.off $(vim-cmd vmsvc/getallvms | grep LAB-WEB | awk '{print $1}')
+      async: 30
+      poll: 0
+      when: LAB-WEB.lower() == 'yes'
+
+    - name: backing up the VMX file for LAB-WEB VM
+      shell: cp /vmfs/volumes/datastore1/LAB-WEB/LAB-WEB.vmx /backup
+      when: LAB-WEB.lower() == 'yes'
+
+    - name: Revert LAB-WEB VM SNAPSHOT
+      shell: "/bin/vim-cmd vmsvc/snapshot.revert {{LAB-WEB_uuid}} 1 VIMCMD_ROOT_SESSION: root:P@ssw0rd@localhost"
+      when: LAB-WEB.lower() == 'yes'
+
+
+    - name: delete the uuid from the vmx file for LAB-WEB VM
+      shell: sed -i '/uuid.location/d' /vmfs/volumes/datastore1/LAB-WEB/LAB-WEB.vmx
+      when: LAB-WEB.lower() == 'yes'
+
+
+    - name: delete the bios uuid for LAB-WEB VMx file
+      shell: sed -i '/uuid.bios/d' /vmfs/volumes/datastore1/LAB-WEB/LAB-WEB.vmx
+      when: LAB-WEB.lower() == 'yes'
+
+
+    - name: copy the uuid of the LAB-WEB VM to the ESXI TMP Directory
+      copy:
+        src: /tmp/LAB-WEB.txt
+        dest: /tmp/LAB-WEB.txt
+      when: LAB-WEB.lower() == 'yes'
+
+
+    - name: update uuid BIOS  on the VMX file for the LAB-WEB VM
+      lineinfile:
+        path: /vmfs/volumes/datastore1/LAB-WEB/LAB-WEB.vmx
+        line: 'uuid.bios = "{{ LAB-WEB_uuid_digits }}"'
+      when: LAB-WEB.lower() == 'yes'
+
+
+    - name: update uuid Location for LAB-WEB VM
+      lineinfile:
+        path: /vmfs/volumes/datastore1/LAB-WEB/LAB-WEB.vmx
+        line: 'uuid.location = "{{ LAB-WEB_uuid_digits }}"'
+      when: LAB-WEB.lower() == 'yes'
+
+
+    - name: unregister the LAB-WEB VM
+      shell: vim-cmd vmsvc/unregister $(vim-cmd vmsvc/getallvms | grep LAB-WEB | awk '{print $1}')
+      when: LAB-WEB.lower() == 'yes'
+
+    - name: register the LAB-WEB vm
+      shell: "vim-cmd solo/registervm /vmfs/volumes/datastore1/LAB-WEB/LAB-WEB.vmx"
+      when: LAB-WEB.lower() == 'yes'
+
+
+    - name: Power On LAB-WEB VM
+      shell: vim-cmd vmsvc/power.on $(vim-cmd vmsvc/getallvms | grep LAB-WEB | awk '{print $1}')
+      async: 30
+      poll: 0
+      when: LAB-WEB.lower() == 'yes'
+
+
+    - name: pause
+      pause:
+        seconds: 30
+      when: LAB-WEB.lower() == 'yes'
+
+
+    - name: Get the Pending powering on question ID
+      shell: vim-cmd vmsvc/message  $(vim-cmd vmsvc/getallvms | grep LAB-WEB | awk '{print $1}')  | awk 'NR==1 { gsub(/[^0-9]/, ""); print }'
+      register: message
+      when: LAB-WEB.lower() == 'yes'
+
+
+    - name:
+      debug:
+        var: message.stdout
+      when: LAB-WEB.lower() == 'yes'
+
+
+    - name: pause for powering on
+      pause:
+        seconds: 30
+      when: LAB-WEB.lower() == 'yes'
+
+    - name: Get the LAB-WEB VM New ID
+      shell: vim-cmd vmsvc/getallvms | grep LAB-WEB | awk '{print $1}'
+      register: vm_id
+      when: LAB-WEB.lower() == 'yes'
+
+
+    - name: answer the question for LAB-WEB VM to be powerd on
+      shell: "vim-cmd vmsvc/message {{ vm_id.stdout }} {{ message.stdout }} 1 "
+      when: LAB-WEB.lower() == 'yes'
+
+                                                                                                                        
+    
+                                                                                
+    
+
+
+    - name: Powering off the LAB-DB VM
+      shell: vim-cmd vmsvc/power.off $(vim-cmd vmsvc/getallvms | grep LAB-DB | awk '{print $1}')
+      async: 30
+      poll: 0
+      when: LAB-DB.lower() == 'yes'
+
+    - name: backing up the VMX file for LAB-DB VM
+      shell: cp /vmfs/volumes/datastore1/LAB-DB/LAB-DB.vmx /backup
+      when: LAB-DB.lower() == 'yes'
+
+    - name: Revert LAB-DB VM SNAPSHOT
+      shell: "/bin/vim-cmd vmsvc/snapshot.revert {{LAB-DB_uuid}} 1 VIMCMD_ROOT_SESSION: root:P@ssw0rd@localhost"
+      when: LAB-DB.lower() == 'yes'
+
+
+    - name: delete the uuid from the vmx file for LAB-DB VM
+      shell: sed -i '/uuid.location/d' /vmfs/volumes/datastore1/LAB-DB/LAB-DB.vmx
+      when: LAB-DB.lower() == 'yes'
+
+
+    - name: delete the bios uuid for LAB-DB VMx file
+      shell: sed -i '/uuid.bios/d' /vmfs/volumes/datastore1/LAB-DB/LAB-DB.vmx
+      when: LAB-DB.lower() == 'yes'
+
+
+    - name: copy the uuid of the LAB-DB VM to the ESXI TMP Directory
+      copy:
+        src: /tmp/LAB-DB.txt
+        dest: /tmp/LAB-DB.txt
+      when: LAB-DB.lower() == 'yes'
+
+
+    - name: update uuid BIOS  on the VMX file for the LAB-DB VM
+      lineinfile:
+        path: /vmfs/volumes/datastore1/LAB-DB/LAB-DB.vmx
+        line: 'uuid.bios = "{{ LAB-DB_uuid_digits }}"'
+      when: LAB-DB.lower() == 'yes'
+
+
+    - name: update uuid Location for LAB-DB VM
+      lineinfile:
+        path: /vmfs/volumes/datastore1/LAB-DB/LAB-DB.vmx
+        line: 'uuid.location = "{{ LAB-DB_uuid_digits }}"'
+      when: LAB-DB.lower() == 'yes'
+
+
+    - name: unregister the LAB-DB VM
+      shell: vim-cmd vmsvc/unregister $(vim-cmd vmsvc/getallvms | grep LAB-DB | awk '{print $1}')
+      when: LAB-DB.lower() == 'yes'
+
+    - name: register the LAB-DB vm
+      shell: "vim-cmd solo/registervm /vmfs/volumes/datastore1/LAB-DB/LAB-DB.vmx"
+      when: LAB-DB.lower() == 'yes'
+
+
+    - name: Power On LAB-DB VM
+      shell: vim-cmd vmsvc/power.on $(vim-cmd vmsvc/getallvms | grep LAB-DB | awk '{print $1}')
+      async: 30
+      poll: 0
+      when: LAB-DB.lower() == 'yes'
+
+
+    - name: pause
+      pause:
+        seconds: 30
+      when: LAB-DB.lower() == 'yes'
+
+
+    - name: Get the Pending powering on question ID
+      shell: vim-cmd vmsvc/message  $(vim-cmd vmsvc/getallvms | grep LAB-DB | awk '{print $1}')  | awk 'NR==1 { gsub(/[^0-9]/, ""); print }'
+      register: message
+      when: LAB-DB.lower() == 'yes'
+
+
+    - name:
+      debug:
+        var: message.stdout
+      when: LAB-DB.lower() == 'yes'
+
+
+    - name: pause for powering on
+      pause:
+        seconds: 30
+      when: LAB-DB.lower() == 'yes'
+
+    - name: Get the LAB-DB VM New ID
+      shell: vim-cmd vmsvc/getallvms | grep LAB-DB | awk '{print $1}'
+      register: vm_id
+      when: LAB-DB.lower() == 'yes'
+
+
+    - name: answer the question for LAB-DB VM to be powerd on
+      shell: "vim-cmd vmsvc/message {{ vm_id.stdout }} {{ message.stdout }} 1 "
+      when: LAB-DB.lower() == 'yes'
+
+                                                                                                                        
+    
+
+
+    - name: Powering off the LAB-EXCH VM
+      shell: vim-cmd vmsvc/power.off $(vim-cmd vmsvc/getallvms | grep LAB-EXCH | awk '{print $1}')
+      async: 30
+      poll: 0
+      when: LAB-EXCH.lower() == 'yes'
+
+    - name: backing up the VMX file for LAB-EXCH VM
+      shell: cp /vmfs/volumes/datastore1/LAB-EXCH/LAB-EXCH.vmx /backup
+      when: LAB-EXCH.lower() == 'yes'
+
+    - name: Revert LAB-EXCH VM SNAPSHOT
+      shell: "/bin/vim-cmd vmsvc/snapshot.revert {{LAB-EXCH_uuid}} 1 VIMCMD_ROOT_SESSION: root:P@ssw0rd@localhost"
+      when: LAB-EXCH.lower() == 'yes'
+
+
+    - name: delete the uuid from the vmx file for LAB-EXCH VM
+      shell: sed -i '/uuid.location/d' /vmfs/volumes/datastore1/LAB-EXCH/LAB-EXCH.vmx
+      when: LAB-EXCH.lower() == 'yes'
+
+
+    - name: delete the bios uuid for LAB-EXCH VMx file
+      shell: sed -i '/uuid.bios/d' /vmfs/volumes/datastore1/LAB-EXCH/LAB-EXCH.vmx
+      when: LAB-EXCH.lower() == 'yes'
+
+
+    - name: copy the uuid of the LAB-EXCH VM to the ESXI TMP Directory
+      copy:
+        src: /tmp/LAB-EXCH.txt
+        dest: /tmp/LAB-EXCH.txt
+      when: LAB-EXCH.lower() == 'yes'
+
+
+    - name: update uuid BIOS  on the VMX file for the LAB-EXCH VM
+      lineinfile:
+        path: /vmfs/volumes/datastore1/LAB-EXCH/LAB-EXCH.vmx
+        line: 'uuid.bios = "{{ LAB-EXCH_uuid_digits }}"'
+      when: LAB-EXCH.lower() == 'yes'
+
+
+    - name: update uuid Location for LAB-EXCH VM
+      lineinfile:
+        path: /vmfs/volumes/datastore1/LAB-EXCH/LAB-EXCH.vmx
+        line: 'uuid.location = "{{ LAB-EXCH_uuid_digits }}"'
+      when: LAB-EXCH.lower() == 'yes'
+
+
+    - name: unregister the LAB-EXCH VM
+      shell: vim-cmd vmsvc/unregister $(vim-cmd vmsvc/getallvms | grep LAB-EXCH | awk '{print $1}')
+      when: LAB-EXCH.lower() == 'yes'
+
+    - name: register the LAB-EXCH vm
+      shell: "vim-cmd solo/registervm /vmfs/volumes/datastore1/LAB-EXCH/LAB-EXCH.vmx"
+      when: LAB-EXCH.lower() == 'yes'
+
+
+    - name: Power On LAB-EXCH VM
+      shell: vim-cmd vmsvc/power.on $(vim-cmd vmsvc/getallvms | grep LAB-EXCH | awk '{print $1}')
+      async: 30
+      poll: 0
+      when: LAB-EXCH.lower() == 'yes'
+
+
+    - name: pause
+      pause:
+        seconds: 30
+      when: LAB-EXCH.lower() == 'yes'
+
+
+    - name: Get the Pending powering on question ID
+      shell: vim-cmd vmsvc/message  $(vim-cmd vmsvc/getallvms | grep LAB-EXCH | awk '{print $1}')  | awk 'NR==1 { gsub(/[^0-9]/, ""); print }'
+      register: message
+      when: LAB-EXCH.lower() == 'yes'
+
+
+    - name:
+      debug:
+        var: message.stdout
+      when: LAB-EXCH.lower() == 'yes'
+
+
+    - name: pause for powering on
+      pause:
+        seconds: 30
+      when: LAB-EXCH.lower() == 'yes'
+
+    - name: Get the LAB-EXCH VM New ID
+      shell: vim-cmd vmsvc/getallvms | grep LAB-EXCH | awk '{print $1}'
+      register: vm_id
+      when: LAB-EXCH.lower() == 'yes'
+
+
+    - name: answer the question for LAB-EXCH VM to be powerd on
+      shell: "vim-cmd vmsvc/message {{ vm_id.stdout }} {{ message.stdout }} 1 "
+      when: LAB-EXCH.lower() == 'yes'
+
+                                                                             
+    
+
+    - name: Powering off the LAB-CL2 VM
+      shell: vim-cmd vmsvc/power.off $(vim-cmd vmsvc/getallvms | grep LAB-CL2 | awk '{print $1}')
+      async: 30
+      poll: 0
+      when: LAB-CL2.lower() == 'yes'
+
+    - name: backing up the VMX file for LAB-CL2 VM
+      shell: cp /vmfs/volumes/datastore1/LAB-CL2/LAB-CL2.vmx /backup
+      when: LAB-CL2.lower() == 'yes'
+
+    - name: Revert LAB-CL2 VM SNAPSHOT
+      shell: "/bin/vim-cmd vmsvc/snapshot.revert {{LAB-CL2_uuid}} 1 VIMCMD_ROOT_SESSION: root:P@ssw0rd@localhost"
+      when: LAB-CL2.lower() == 'yes'
+
+
+    - name: delete the uuid from the vmx file for LAB-CL2 VM
+      shell: sed -i '/uuid.location/d' /vmfs/volumes/datastore1/LAB-CL2/LAB-CL2.vmx
+      when: LAB-CL2.lower() == 'yes'
+
+
+    - name: delete the bios uuid for LAB-CL2 VMx file
+      shell: sed -i '/uuid.bios/d' /vmfs/volumes/datastore1/LAB-CL2/LAB-CL2.vmx
+      when: LAB-CL2.lower() == 'yes'
+
+
+    - name: copy the uuid of the LAB-CL2 VM to the ESXI TMP Directory
+      copy:
+        src: /tmp/LAB-CL2.txt
+        dest: /tmp/LAB-CL2.txt
+      when: LAB-CL2.lower() == 'yes'
+
+
+    - name: update uuid BIOS  on the VMX file for the LAB-CL2 VM
+      lineinfile:
+        path: /vmfs/volumes/datastore1/LAB-CL2/LAB-CL2.vmx
+        line: 'uuid.bios = "{{ LAB-CL2_uuid_digits }}"'
+      when: LAB-CL2.lower() == 'yes'
+
+
+    - name: update uuid Location for LAB-CL2 VM
+      lineinfile:
+        path: /vmfs/volumes/datastore1/LAB-CL2/LAB-CL2.vmx
+        line: 'uuid.location = "{{ LAB-CL2_uuid_digits }}"'
+      when: LAB-CL2.lower() == 'yes'
+
+
+    - name: unregister the LAB-CL2 VM
+      shell: vim-cmd vmsvc/unregister $(vim-cmd vmsvc/getallvms | grep LAB-CL2 | awk '{print $1}')
+      when: LAB-CL2.lower() == 'yes'
+
+    - name: register the LAB-CL2 vm
+      shell: "vim-cmd solo/registervm /vmfs/volumes/datastore1/LAB-CL2/LAB-CL2.vmx"
+      when: LAB-CL2.lower() == 'yes'
+
+
+    - name: Power On LAB-CL2 VM
+      shell: vim-cmd vmsvc/power.on $(vim-cmd vmsvc/getallvms | grep LAB-CL2 | awk '{print $1}')
+      async: 30
+      poll: 0
+      when: LAB-CL2.lower() == 'yes'
+
+
+    - name: pause
+      pause:
+        seconds: 30
+      when: LAB-CL2.lower() == 'yes'
+
+
+    - name: Get the Pending powering on question ID
+      shell: vim-cmd vmsvc/message  $(vim-cmd vmsvc/getallvms | grep LAB-CL2 | awk '{print $1}')  | awk 'NR==1 { gsub(/[^0-9]/, ""); print }'
+      register: message
+      when: LAB-CL2.lower() == 'yes'
+
+
+    - name:
+      debug:
+        var: message.stdout
+      when: LAB-CL2.lower() == 'yes'
+
+
+    - name: pause for powering on
+      pause:
+        seconds: 30
+      when: LAB-CL2.lower() == 'yes'
+
+    - name: Get the LAB-CL2 VM New ID
+      shell: vim-cmd vmsvc/getallvms | grep LAB-CL2 | awk '{print $1}'
+      register: vm_id
+      when: LAB-CL2.lower() == 'yes'
+
+
+    - name: answer the question for LAB-CL2 VM to be powerd on
+      shell: "vim-cmd vmsvc/message {{ vm_id.stdout }} {{ message.stdout }} 1 "
+      when: LAB-CL2.lower() == 'yes'
+
+
+
+
+
+    - name: Powering off the LAB-WAPP VM
+      shell: vim-cmd vmsvc/power.off $(vim-cmd vmsvc/getallvms | grep LAB-WAPP | awk '{print $1}')
+      async: 30
+      poll: 0
+      when: LAB-WAPP.lower() == 'yes'
+
+    - name: backing up the VMX file for LAB-WAPP VM
+      shell: cp /vmfs/volumes/datastore1/LAB-WAPP/LAB-WAPP.vmx /backup
+      when: LAB-WAPP.lower() == 'yes'
+
+    - name: Revert LAB-WAPP VM SNAPSHOT
+      shell: "/bin/vim-cmd vmsvc/snapshot.revert {{LAB-WAPP_uuid}} 1 VIMCMD_ROOT_SESSION: root:P@ssw0rd@localhost"
+      when: LAB-WAPP.lower() == 'yes'
+
+
+    - name: delete the uuid from the vmx file for LAB-WAPP VM
+      shell: sed -i '/uuid.location/d' /vmfs/volumes/datastore1/LAB-WAPP/LAB-WAPP.vmx
+      when: LAB-WAPP.lower() == 'yes'
+
+
+    - name: delete the bios uuid for LAB-WAPP VMx file
+      shell: sed -i '/uuid.bios/d' /vmfs/volumes/datastore1/LAB-WAPP/LAB-WAPP.vmx
+      when: LAB-WAPP.lower() == 'yes'
+
+
+    - name: copy the uuid of the LAB-WAPP VM to the ESXI TMP Directory
+      copy:
+        src: /tmp/LAB-WAPP.txt
+        dest: /tmp/LAB-WAPP.txt
+      when: LAB-WAPP.lower() == 'yes'
+
+
+    - name: update uuid BIOS  on the VMX file for the LAB-WAPP VM
+      lineinfile:
+        path: /vmfs/volumes/datastore1/LAB-WAPP/LAB-WAPP.vmx
+        line: 'uuid.bios = "{{ LAB-WAPP_uuid_digits }}"'
+      when: LAB-WAPP.lower() == 'yes'
+
+
+    - name: update uuid Location for LAB-WAPP VM
+      lineinfile:
+        path: /vmfs/volumes/datastore1/LAB-WAPP/LAB-WAPP.vmx
+        line: 'uuid.location = "{{ LAB-WAPP_uuid_digits }}"'
+      when: LAB-WAPP.lower() == 'yes'
+
+
+    - name: unregister the LAB-WAPP VM
+      shell: vim-cmd vmsvc/unregister $(vim-cmd vmsvc/getallvms | grep LAB-WAPP | awk '{print $1}')
+      when: LAB-WAPP.lower() == 'yes'
+
+    - name: register the LAB-WAPP vm
+      shell: "vim-cmd solo/registervm /vmfs/volumes/datastore1/LAB-WAPP/LAB-WAPP.vmx"
+      when: LAB-WAPP.lower() == 'yes'
+
+
+    - name: Power On LAB-WAPP VM
+      shell: vim-cmd vmsvc/power.on $(vim-cmd vmsvc/getallvms | grep LAB-WAPP | awk '{print $1}')
+      async: 30
+      poll: 0
+      when: LAB-WAPP.lower() == 'yes'
+
+
+    - name: pause
+      pause:
+        seconds: 30
+      when: LAB-WAPP.lower() == 'yes'
+
+
+    - name: Get the Pending powering on question ID
+      shell: vim-cmd vmsvc/message  $(vim-cmd vmsvc/getallvms | grep LAB-WAPP | awk '{print $1}')  | awk 'NR==1 { gsub(/[^0-9]/, ""); print }'
+      register: message
+      when: LAB-WAPP.lower() == 'yes'
+
+
+    - name:
+      debug:
+        var: message.stdout
+      when: LAB-WAPP.lower() == 'yes'
+
+
+    - name: pause for powering on
+      pause:
+        seconds: 30
+      when: LAB-WAPP.lower() == 'yes'
+
+    - name: Get the LAB-WAPP VM New ID
+      shell: vim-cmd vmsvc/getallvms | grep LAB-WAPP | awk '{print $1}'
+      register: vm_id
+      when: LAB-WAPP.lower() == 'yes'
+
+
+    - name: answer the question for LAB-WAPP VM to be powerd on
+      shell: "vim-cmd vmsvc/message {{ vm_id.stdout }} {{ message.stdout }} 1 "
+      when: LAB-WAPP.lower() == 'yes'
+
+
+
+
+
+
+
+    - name: Powering off the LAB-AD1 VM
+      shell: vim-cmd vmsvc/power.off $(vim-cmd vmsvc/getallvms | grep LAB-AD1 | awk '{print $1}')
+      async: 30
+      poll: 0
+      when: LAB-AD1.lower() == 'yes'
+
+    - name: backing up the VMX file for LAB-AD1 VM
+      shell: cp /vmfs/volumes/datastore1/LAB-AD1/LAB-AD1.vmx /backup
+      when: LAB-AD1.lower() == 'yes'
+
+    - name: Revert LAB-AD1 VM SNAPSHOT
+      shell: "/bin/vim-cmd vmsvc/snapshot.revert {{LAB-AD1_uuid}} 1 VIMCMD_ROOT_SESSION: root:P@ssw0rd@localhost"
+      when: LAB-AD1.lower() == 'yes'
+
+
+    - name: delete the uuid from the vmx file for LAB-AD1 VM
+      shell: sed -i '/uuid.location/d' /vmfs/volumes/datastore1/LAB-AD1/LAB-AD1.vmx
+      when: LAB-AD1.lower() == 'yes'
+
+
+    - name: delete the bios uuid for LAB-AD1 VMx file
+      shell: sed -i '/uuid.bios/d' /vmfs/volumes/datastore1/LAB-AD1/LAB-AD1.vmx
+      when: LAB-AD1.lower() == 'yes'
+
+
+    - name: copy the uuid of the LAB-AD1 VM to the ESXI TMP Directory
+      copy:
+        src: /tmp/LAB-AD1.txt
+        dest: /tmp/LAB-AD1.txt
+      when: LAB-AD1.lower() == 'yes'
+
+
+    - name: update uuid BIOS  on the VMX file for the LAB-AD1 VM
+      lineinfile:
+        path: /vmfs/volumes/datastore1/LAB-AD1/LAB-AD1.vmx
+        line: 'uuid.bios = "{{ LAB-AD1_uuid_digits }}"'
+      when: LAB-AD1.lower() == 'yes'
+
+
+    - name: update uuid Location for LAB-AD1 VM
+      lineinfile:
+        path: /vmfs/volumes/datastore1/LAB-AD1/LAB-AD1.vmx
+        line: 'uuid.location = "{{ LAB-AD1_uuid_digits }}"'
+      when: LAB-AD1.lower() == 'yes'
+
+
+    - name: unregister the LAB-AD1 VM
+      shell: vim-cmd vmsvc/unregister $(vim-cmd vmsvc/getallvms | grep LAB-AD1 | awk '{print $1}')
+      when: LAB-AD1.lower() == 'yes'
+
+    - name: register the LAB-AD1 vm
+      shell: "vim-cmd solo/registervm /vmfs/volumes/datastore1/LAB-AD1/LAB-AD1.vmx"
+      when: LAB-AD1.lower() == 'yes'
+
+
+    - name: Power On LAB-AD1 VM
+      shell: vim-cmd vmsvc/power.on $(vim-cmd vmsvc/getallvms | grep LAB-AD1 | awk '{print $1}')
+      async: 30
+      poll: 0
+      when: LAB-AD1.lower() == 'yes'
+
+
+    - name: pause
+      pause:
+        seconds: 30
+      when: LAB-AD1.lower() == 'yes'
+
+
+    - name: Get the Pending powering on question ID
+      shell: vim-cmd vmsvc/message  $(vim-cmd vmsvc/getallvms | grep LAB-AD1 | awk '{print $1}')  | awk 'NR==1 { gsub(/[^0-9]/, ""); print }'
+      register: message
+      when: LAB-AD1.lower() == 'yes'
+
+
+    - name:
+      debug:
+        var: message.stdout
+      when: LAB-AD1.lower() == 'yes'
+
+
+    - name: pause for powering on
+      pause:
+        seconds: 30
+      when: LAB-AD1.lower() == 'yes'
+
+    - name: Get the LAB-AD1 VM New ID
+      shell: vim-cmd vmsvc/getallvms | grep LAB-AD1 | awk '{print $1}'
+      register: vm_id
+      when: LAB-AD1.lower() == 'yes'
+
+
+    - name: answer the question for LAB-AD1 VM to be powerd on
+      shell: "vim-cmd vmsvc/message {{ vm_id.stdout }} {{ message.stdout }} 1 "
+      when: LAB-AD1.lower() == 'yes'
+
+
+
+
+
+    - name: Powering off the LAB-AD2 VM
+      shell: vim-cmd vmsvc/power.off $(vim-cmd vmsvc/getallvms | grep LAB-AD2 | awk '{print $1}')
+      async: 30
+      poll: 0
+      when: LAB-AD2.lower() == 'yes'
+
+    - name: backing up the VMX file for LAB-AD2 VM
+      shell: cp /vmfs/volumes/datastore1/LAB-AD2/LAB-AD2.vmx /backup
+      when: LAB-AD2.lower() == 'yes'
+
+    - name: Revert LAB-AD2 VM SNAPSHOT
+      shell: "/bin/vim-cmd vmsvc/snapshot.revert {{LAB-AD2_uuid}} 1 VIMCMD_ROOT_SESSION: root:P@ssw0rd@localhost"
+      when: LAB-AD2.lower() == 'yes'
+
+
+    - name: delete the uuid from the vmx file for LAB-AD2 VM
+      shell: sed -i '/uuid.location/d' /vmfs/volumes/datastore1/LAB-AD2/LAB-AD2.vmx
+      when: LAB-AD2.lower() == 'yes'
+
+
+    - name: delete the bios uuid for LAB-AD2 VMx file
+      shell: sed -i '/uuid.bios/d' /vmfs/volumes/datastore1/LAB-AD2/LAB-AD2.vmx
+      when: LAB-AD2.lower() == 'yes'
+
+
+    - name: copy the uuid of the LAB-AD2 VM to the ESXI TMP Directory
+      copy:
+        src: /tmp/LAB-AD2.txt
+        dest: /tmp/LAB-AD2.txt
+      when: LAB-AD2.lower() == 'yes'
+
+
+    - name: update uuid BIOS  on the VMX file for the LAB-AD2 VM
+      lineinfile:
+        path: /vmfs/volumes/datastore1/LAB-AD2/LAB-AD2.vmx
+        line: 'uuid.bios = "{{ LAB-AD2_uuid_digits }}"'
+      when: LAB-AD2.lower() == 'yes'
+
+
+    - name: update uuid Location for LAB-AD2 VM
+      lineinfile:
+        path: /vmfs/volumes/datastore1/LAB-AD2/LAB-AD2.vmx
+        line: 'uuid.location = "{{ LAB-AD2_uuid_digits }}"'
+      when: LAB-AD2.lower() == 'yes'
+
+
+    - name: unregister the LAB-AD2 VM
+      shell: vim-cmd vmsvc/unregister $(vim-cmd vmsvc/getallvms | grep LAB-AD2 | awk '{print $1}')
+      when: LAB-AD2.lower() == 'yes'
+
+    - name: register the LAB-AD2 vm
+      shell: "vim-cmd solo/registervm /vmfs/volumes/datastore1/LAB-AD2/LAB-AD2.vmx"
+      when: LAB-AD2.lower() == 'yes'
+
+
+    - name: Power On LAB-AD2 VM
+      shell: vim-cmd vmsvc/power.on $(vim-cmd vmsvc/getallvms | grep LAB-AD2 | awk '{print $1}')
+      async: 30
+      poll: 0
+      when: LAB-AD2.lower() == 'yes'
+
+
+    - name: pause
+      pause:
+        seconds: 30
+      when: LAB-AD2.lower() == 'yes'
+
+
+    - name: Get the Pending powering on question ID
+      shell: vim-cmd vmsvc/message  $(vim-cmd vmsvc/getallvms | grep LAB-AD2 | awk '{print $1}')  | awk 'NR==1 { gsub(/[^0-9]/, ""); print }'
+      register: message
+      when: LAB-AD2.lower() == 'yes'
+
+
+    - name:
+      debug:
+        var: message.stdout
+      when: LAB-AD2.lower() == 'yes'
+
+
+    - name: pause for powering on
+      pause:
+        seconds: 30
+      when: LAB-AD2.lower() == 'yes'
+
+    - name: Get the LAB-AD2 VM New ID
+      shell: vim-cmd vmsvc/getallvms | grep LAB-AD2 | awk '{print $1}'
+      register: vm_id
+      when: LAB-AD2.lower() == 'yes'
+
+
+    - name: answer the question for LAB-AD2 VM to be powerd on
+      shell: "vim-cmd vmsvc/message {{ vm_id.stdout }} {{ message.stdout }} 1 "
+      when: LAB-AD2.lower() == 'yes'
+
+
+
+
+
+
+    - name: Powering off the LAB-DFW VM
+      shell: vim-cmd vmsvc/power.off $(vim-cmd vmsvc/getallvms | grep LAB-DFW | awk '{print $1}')
+      async: 30
+      poll: 0
+      when: LAB-DFW.lower() == 'yes'
+
+    - name: backing up the VMX file for LAB-DFW VM
+      shell: cp /vmfs/volumes/datastore1/LAB-DFW/LAB-DFW.vmx /backup
+      when: LAB-DFW.lower() == 'yes'
+
+    - name: Revert LAB-DFW VM SNAPSHOT
+      shell: "/bin/vim-cmd vmsvc/snapshot.revert {{LAB-DFW_uuid}} 1 VIMCMD_ROOT_SESSION: root:P@ssw0rd@localhost"
+      when: LAB-DFW.lower() == 'yes'
+
+
+    - name: delete the uuid from the vmx file for LAB-DFW VM
+      shell: sed -i '/uuid.location/d' /vmfs/volumes/datastore1/LAB-DFW/LAB-DFW.vmx
+      when: LAB-DFW.lower() == 'yes'
+
+
+    - name: delete the bios uuid for LAB-DFW VMx file
+      shell: sed -i '/uuid.bios/d' /vmfs/volumes/datastore1/LAB-DFW/LAB-DFW.vmx
+      when: LAB-DFW.lower() == 'yes'
+
+
+    - name: copy the uuid of the LAB-DFW VM to the ESXI TMP Directory
+      copy:
+        src: /tmp/LAB-DFW.txt
+        dest: /tmp/LAB-DFW.txt
+      when: LAB-DFW.lower() == 'yes'
+
+
+    - name: update uuid BIOS  on the VMX file for the LAB-DFW VM
+      lineinfile:
+        path: /vmfs/volumes/datastore1/LAB-DFW/LAB-DFW.vmx
+        line: 'uuid.bios = "{{ LAB-DFW_uuid_digits }}"'
+      when: LAB-DFW.lower() == 'yes'
+
+
+    - name: update uuid Location for LAB-DFW VM
+      lineinfile:
+        path: /vmfs/volumes/datastore1/LAB-DFW/LAB-DFW.vmx
+        line: 'uuid.location = "{{ LAB-DFW_uuid_digits }}"'
+      when: LAB-DFW.lower() == 'yes'
+
+
+    - name: unregister the LAB-DFW VM
+      shell: vim-cmd vmsvc/unregister $(vim-cmd vmsvc/getallvms | grep LAB-DFW | awk '{print $1}')
+      when: LAB-DFW.lower() == 'yes'
+
+    - name: register the LAB-DFW vm
+      shell: "vim-cmd solo/registervm /vmfs/volumes/datastore1/LAB-DFW/LAB-DFW.vmx"
+      when: LAB-DFW.lower() == 'yes'
+
+
+    - name: Power On LAB-DFW VM
+      shell: vim-cmd vmsvc/power.on $(vim-cmd vmsvc/getallvms | grep LAB-DFW | awk '{print $1}')
+      async: 30
+      poll: 0
+      when: LAB-DFW.lower() == 'yes'
+
+
+    - name: pause
+      pause:
+        seconds: 30
+      when: LAB-DFW.lower() == 'yes'
+
+
+    - name: Get the Pending powering on question ID
+      shell: vim-cmd vmsvc/message  $(vim-cmd vmsvc/getallvms | grep LAB-DFW | awk '{print $1}')  | awk 'NR==1 { gsub(/[^0-9]/, ""); print }'
+      register: message
+      when: LAB-DFW.lower() == 'yes'
+
+
+    - name:
+      debug:
+        var: message.stdout
+      when: LAB-DFW.lower() == 'yes'
+
+
+    - name: pause for powering on
+      pause:
+        seconds: 30
+      when: LAB-DFW.lower() == 'yes'
+
+    - name: Get the LAB-DFW VM New ID
+      shell: vim-cmd vmsvc/getallvms | grep LAB-DFW | awk '{print $1}'
+      register: vm_id
+      when: LAB-DFW.lower() == 'yes'
+
+
+    - name: answer the question for LAB-DFW VM to be powerd on
+      shell: "vim-cmd vmsvc/message {{ vm_id.stdout }} {{ message.stdout }} 1 "
+      when: LAB-DFW.lower() == 'yes'
+
+
+
+
+
+    - name: Powering off the LAB-RFW VM
+      shell: vim-cmd vmsvc/power.off $(vim-cmd vmsvc/getallvms | grep LAB-RFW | awk '{print $1}')
+      async: 30
+      poll: 0
+      when: LAB-RFW.lower() == 'yes'
+
+    - name: backing up the VMX file for LAB-RFW VM
+      shell: cp /vmfs/volumes/datastore1/LAB-RFW/LAB-RFW.vmx /backup
+      when: LAB-RFW.lower() == 'yes'
+
+    - name: Revert LAB-RFW VM SNAPSHOT
+      shell: "/bin/vim-cmd vmsvc/snapshot.revert {{LAB-RFW_uuid}} 1 VIMCMD_ROOT_SESSION: root:P@ssw0rd@localhost"
+      when: LAB-RFW.lower() == 'yes'
+
+
+    - name: delete the uuid from the vmx file for LAB-RFW VM
+      shell: sed -i '/uuid.location/d' /vmfs/volumes/datastore1/LAB-RFW/LAB-RFW.vmx
+      when: LAB-RFW.lower() == 'yes'
+
+
+    - name: delete the bios uuid for LAB-RFW VMx file
+      shell: sed -i '/uuid.bios/d' /vmfs/volumes/datastore1/LAB-RFW/LAB-RFW.vmx
+      when: LAB-RFW.lower() == 'yes'
+
+
+    - name: copy the uuid of the LAB-RFW VM to the ESXI TMP Directory
+      copy:
+        src: /tmp/LAB-RFW.txt
+        dest: /tmp/LAB-RFW.txt
+      when: LAB-RFW.lower() == 'yes'
+
+
+    - name: update uuid BIOS  on the VMX file for the LAB-RFW VM
+      lineinfile:
+        path: /vmfs/volumes/datastore1/LAB-RFW/LAB-RFW.vmx
+        line: 'uuid.bios = "{{ LAB-RFW_uuid_digits }}"'
+      when: LAB-RFW.lower() == 'yes'
+
+
+    - name: update uuid Location for LAB-RFW VM
+      lineinfile:
+        path: /vmfs/volumes/datastore1/LAB-RFW/LAB-RFW.vmx
+        line: 'uuid.location = "{{ LAB-RFW_uuid_digits }}"'
+      when: LAB-RFW.lower() == 'yes'
+
+
+    - name: unregister the LAB-RFW VM
+      shell: vim-cmd vmsvc/unregister $(vim-cmd vmsvc/getallvms | grep LAB-RFW | awk '{print $1}')
+      when: LAB-RFW.lower() == 'yes'
+
+    - name: register the LAB-RFW vm
+      shell: "vim-cmd solo/registervm /vmfs/volumes/datastore1/LAB-RFW/LAB-RFW.vmx"
+      when: LAB-RFW.lower() == 'yes'
+
+
+    - name: Power On LAB-RFW VM
+      shell: vim-cmd vmsvc/power.on $(vim-cmd vmsvc/getallvms | grep LAB-RFW | awk '{print $1}')
+      async: 30
+      poll: 0
+      when: LAB-RFW.lower() == 'yes'
+
+
+    - name: pause
+      pause:
+        seconds: 30
+      when: LAB-RFW.lower() == 'yes'
+
+
+    - name: Get the Pending powering on question ID
+      shell: vim-cmd vmsvc/message  $(vim-cmd vmsvc/getallvms | grep LAB-RFW | awk '{print $1}')  | awk 'NR==1 { gsub(/[^0-9]/, ""); print }'
+      register: message
+      when: LAB-RFW.lower() == 'yes'
+
+
+    - name:
+      debug:
+        var: message.stdout
+      when: LAB-RFW.lower() == 'yes'
+
+
+    - name: pause for powering on
+      pause:
+        seconds: 30
+      when: LAB-RFW.lower() == 'yes'
+
+    - name: Get the LAB-RFW VM New ID
+      shell: vim-cmd vmsvc/getallvms | grep LAB-RFW | awk '{print $1}'
+      register: vm_id
+      when: LAB-RFW.lower() == 'yes'
+
+
+    - name: answer the question for LAB-RFW VM to be powerd on
+      shell: "vim-cmd vmsvc/message {{ vm_id.stdout }} {{ message.stdout }} 1 "
+      when: LAB-RFW.lower() == 'yes'
+
+
+
+
+
+    - name: Powering off the LAB-EDR VM
+      shell: vim-cmd vmsvc/power.off $(vim-cmd vmsvc/getallvms | grep LAB-EDR | awk '{print $1}')
+      async: 30
+      poll: 0
+      when: LAB-EDR.lower() == 'yes'
+
+    - name: backing up the VMX file for LAB-EDR VM
+      shell: cp /vmfs/volumes/datastore1/LAB-EDR/LAB-EDR.vmx /backup
+      when: LAB-EDR.lower() == 'yes'
+
+    - name: Revert LAB-EDR VM SNAPSHOT
+      shell: "/bin/vim-cmd vmsvc/snapshot.revert {{LAB-EDR_uuid}} 1 VIMCMD_ROOT_SESSION: root:P@ssw0rd@localhost"
+      when: LAB-EDR.lower() == 'yes'
+
+
+    - name: delete the uuid from the vmx file for LAB-EDR VM
+      shell: sed -i '/uuid.location/d' /vmfs/volumes/datastore1/LAB-EDR/LAB-EDR.vmx
+      when: LAB-EDR.lower() == 'yes'
+
+
+    - name: delete the bios uuid for LAB-EDR VMx file
+      shell: sed -i '/uuid.bios/d' /vmfs/volumes/datastore1/LAB-EDR/LAB-EDR.vmx
+      when: LAB-EDR.lower() == 'yes'
+
+
+    - name: copy the uuid of the LAB-EDR VM to the ESXI TMP Directory
+      copy:
+        src: /tmp/LAB-EDR.txt
+        dest: /tmp/LAB-EDR.txt
+      when: LAB-EDR.lower() == 'yes'
+
+
+    - name: update uuid BIOS  on the VMX file for the LAB-EDR VM
+      lineinfile:
+        path: /vmfs/volumes/datastore1/LAB-EDR/LAB-EDR.vmx
+        line: 'uuid.bios = "{{ LAB-EDR_uuid_digits }}"'
+      when: LAB-EDR.lower() == 'yes'
+
+
+    - name: update uuid Location for LAB-EDR VM
+      lineinfile:
+        path: /vmfs/volumes/datastore1/LAB-EDR/LAB-EDR.vmx
+        line: 'uuid.location = "{{ LAB-EDR_uuid_digits }}"'
+      when: LAB-EDR.lower() == 'yes'
+
+
+    - name: unregister the LAB-EDR VM
+      shell: vim-cmd vmsvc/unregister $(vim-cmd vmsvc/getallvms | grep LAB-EDR | awk '{print $1}')
+      when: LAB-EDR.lower() == 'yes'
+
+    - name: register the LAB-EDR vm
+      shell: "vim-cmd solo/registervm /vmfs/volumes/datastore1/LAB-EDR/LAB-EDR.vmx"
+      when: LAB-EDR.lower() == 'yes'
+
+
+    - name: Power On LAB-EDR VM
+      shell: vim-cmd vmsvc/power.on $(vim-cmd vmsvc/getallvms | grep LAB-EDR | awk '{print $1}')
+      async: 30
+      poll: 0
+      when: LAB-EDR.lower() == 'yes'
+
+
+    - name: pause
+      pause:
+        seconds: 30
+      when: LAB-EDR.lower() == 'yes'
+
+
+    - name: Get the Pending powering on question ID
+      shell: vim-cmd vmsvc/message  $(vim-cmd vmsvc/getallvms | grep LAB-EDR | awk '{print $1}')  | awk 'NR==1 { gsub(/[^0-9]/, ""); print }'
+      register: message
+      when: LAB-EDR.lower() == 'yes'
+
+
+    - name:
+      debug:
+        var: message.stdout
+      when: LAB-EDR.lower() == 'yes'
+
+
+    - name: pause for powering on
+      pause:
+        seconds: 30
+      when: LAB-EDR.lower() == 'yes'
+
+    - name: Get the LAB-EDR VM New ID
+      shell: vim-cmd vmsvc/getallvms | grep LAB-EDR | awk '{print $1}'
+      register: vm_id
+      when: LAB-EDR.lower() == 'yes'
+
+
+    - name: answer the question for LAB-EDR VM to be powerd on
+      shell: "vim-cmd vmsvc/message {{ vm_id.stdout }} {{ message.stdout }} 1 "
+      when: LAB-EDR.lower() == 'yes'
+
+
+
+
+    - name: Powering off the LAB-DC-FW VM
+      shell: vim-cmd vmsvc/power.off $(vim-cmd vmsvc/getallvms | grep LAB-DC-FW | awk '{print $1}')
+      async: 30
+      poll: 0
+      when: LAB-DC-FW.lower() == 'yes'
+
+    - name: backing up the VMX file for LAB-DC-FW VM
+      shell: cp /vmfs/volumes/datastore1/LAB-DC-FW/LAB-DC-FW.vmx /backup
+      when: LAB-DC-FW.lower() == 'yes'
+
+    - name: Revert LAB-DC-FW VM SNAPSHOT
+      shell: "/bin/vim-cmd vmsvc/snapshot.revert {{LAB-DC-FW_uuid}} 1 VIMCMD_ROOT_SESSION: root:P@ssw0rd@localhost"
+      when: LAB-DC-FW.lower() == 'yes'
+
+
+    - name: delete the uuid from the vmx file for LAB-DC-FW VM
+      shell: sed -i '/uuid.location/d' /vmfs/volumes/datastore1/LAB-DC-FW/LAB-DC-FW.vmx
+      when: LAB-DC-FW.lower() == 'yes'
+
+
+    - name: delete the bios uuid for LAB-DC-FW VMx file
+      shell: sed -i '/uuid.bios/d' /vmfs/volumes/datastore1/LAB-DC-FW/LAB-DC-FW.vmx
+      when: LAB-DC-FW.lower() == 'yes'
+
+
+    - name: copy the uuid of the LAB-DC-FW VM to the ESXI TMP Directory
+      copy:
+        src: /tmp/LAB-DC-FW.txt
+        dest: /tmp/LAB-DC-FW.txt
+      when: LAB-DC-FW.lower() == 'yes'
+
+
+    - name: update uuid BIOS  on the VMX file for the LAB-DC-FW VM
+      lineinfile:
+        path: /vmfs/volumes/datastore1/LAB-DC-FW/LAB-DC-FW.vmx
+        line: 'uuid.bios = "{{ LAB-DC-FW_uuid_digits }}"'
+      when: LAB-DC-FW.lower() == 'yes'
+
+
+    - name: update uuid Location for LAB-DC-FW VM
+      lineinfile:
+        path: /vmfs/volumes/datastore1/LAB-DC-FW/LAB-DC-FW.vmx
+        line: 'uuid.location = "{{ LAB-DC-FW_uuid_digits }}"'
+      when: LAB-DC-FW.lower() == 'yes'
+
+
+    - name: unregister the LAB-DC-FW VM
+      shell: vim-cmd vmsvc/unregister $(vim-cmd vmsvc/getallvms | grep LAB-DC-FW | awk '{print $1}')
+      when: LAB-DC-FW.lower() == 'yes'
+
+    - name: register the LAB-DC-FW vm
+      shell: "vim-cmd solo/registervm /vmfs/volumes/datastore1/LAB-DC-FW/LAB-DC-FW.vmx"
+      when: LAB-DC-FW.lower() == 'yes'
+
+
+    - name: Power On LAB-DC-FW VM
+      shell: vim-cmd vmsvc/power.on $(vim-cmd vmsvc/getallvms | grep LAB-DC-FW | awk '{print $1}')
+      async: 30
+      poll: 0
+      when: LAB-DC-FW.lower() == 'yes'
+
+
+    - name: pause
+      pause:
+        seconds: 30
+      when: LAB-DC-FW.lower() == 'yes'
+
+
+    - name: Get the Pending powering on question ID
+      shell: vim-cmd vmsvc/message  $(vim-cmd vmsvc/getallvms | grep LAB-DC-FW | awk '{print $1}')  | awk 'NR==1 { gsub(/[^0-9]/, ""); print }'
+      register: message
+      when: LAB-DC-FW.lower() == 'yes'
+
+
+    - name:
+      debug:
+        var: message.stdout
+      when: LAB-DC-FW.lower() == 'yes'
+
+
+    - name: pause for powering on
+      pause:
+        seconds: 30
+      when: LAB-DC-FW.lower() == 'yes'
+
+    - name: Get the LAB-DC-FW VM New ID
+      shell: vim-cmd vmsvc/getallvms | grep LAB-DC-FW | awk '{print $1}'
+      register: vm_id
+      when: LAB-DC-FW.lower() == 'yes'
+
+
+    - name: answer the question for LAB-DC-FW VM to be powerd on
+      shell: "vim-cmd vmsvc/message {{ vm_id.stdout }} {{ message.stdout }} 1 "
+      when: LAB-DC-FW.lower() == 'yes'
+
+
+
+    - name: Powering off the LAB-EX-FW VM
+      shell: vim-cmd vmsvc/power.off $(vim-cmd vmsvc/getallvms | grep LAB-EX-FW | awk '{print $1}')
+      async: 30
+      poll: 0
+      when: LAB-EX-FW.lower() == 'yes'
+
+    - name: backing up the VMX file for LAB-EX-FW VM
+      shell: cp /vmfs/volumes/datastore1/LAB-EX-FW/LAB-EX-FW.vmx /backup
+      when: LAB-EX-FW.lower() == 'yes'
+
+    - name: Revert LAB-EX-FW VM SNAPSHOT
+      shell: "/bin/vim-cmd vmsvc/snapshot.revert {{LAB-EX-FW_uuid}} 1 VIMCMD_ROOT_SESSION: root:P@ssw0rd@localhost"
+      when: LAB-EX-FW.lower() == 'yes'
+
+
+    - name: delete the uuid from the vmx file for LAB-EX-FW VM
+      shell: sed -i '/uuid.location/d' /vmfs/volumes/datastore1/LAB-EX-FW/LAB-EX-FW.vmx
+      when: LAB-EX-FW.lower() == 'yes'
+
+
+    - name: delete the bios uuid for LAB-EX-FW VMx file
+      shell: sed -i '/uuid.bios/d' /vmfs/volumes/datastore1/LAB-EX-FW/LAB-EX-FW.vmx
+      when: LAB-EX-FW.lower() == 'yes'
+
+
+    - name: copy the uuid of the LAB-EX-FW VM to the ESXI TMP Directory
+      copy:
+        src: /tmp/LAB-EX-FW.txt
+        dest: /tmp/LAB-EX-FW.txt
+      when: LAB-EX-FW.lower() == 'yes'
+
+
+    - name: update uuid BIOS  on the VMX file for the LAB-EX-FW VM
+      lineinfile:
+        path: /vmfs/volumes/datastore1/LAB-EX-FW/LAB-EX-FW.vmx
+        line: 'uuid.bios = "{{ LAB-EX-FW_uuid_digits }}"'
+      when: LAB-EX-FW.lower() == 'yes'
+
+
+    - name: update uuid Location for LAB-EX-FW VM
+      lineinfile:
+        path: /vmfs/volumes/datastore1/LAB-EX-FW/LAB-EX-FW.vmx
+        line: 'uuid.location = "{{ LAB-EX-FW_uuid_digits }}"'
+      when: LAB-EX-FW.lower() == 'yes'
+
+
+    - name: unregister the LAB-EX-FW VM
+      shell: vim-cmd vmsvc/unregister $(vim-cmd vmsvc/getallvms | grep LAB-EX-FW | awk '{print $1}')
+      when: LAB-EX-FW.lower() == 'yes'
+
+    - name: register the LAB-EX-FW vm
+      shell: "vim-cmd solo/registervm /vmfs/volumes/datastore1/LAB-EX-FW/LAB-EX-FW.vmx"
+      when: LAB-EX-FW.lower() == 'yes'
+
+
+    - name: Power On LAB-EX-FW VM
+      shell: vim-cmd vmsvc/power.on $(vim-cmd vmsvc/getallvms | grep LAB-EX-FW | awk '{print $1}')
+      async: 30
+      poll: 0
+      when: LAB-EX-FW.lower() == 'yes'
+
+
+    - name: pause
+      pause:
+        seconds: 30
+      when: LAB-EX-FW.lower() == 'yes'
+
+
+    - name: Get the Pending powering on question ID
+      shell: vim-cmd vmsvc/message  $(vim-cmd vmsvc/getallvms | grep LAB-EX-FW | awk '{print $1}')  | awk 'NR==1 { gsub(/[^0-9]/, ""); print }'
+      register: message
+      when: LAB-EX-FW.lower() == 'yes'
+
+
+    - name:
+      debug:
+        var: message.stdout
+      when: LAB-EX-FW.lower() == 'yes'
+
+
+    - name: pause for powering on
+      pause:
+        seconds: 30
+      when: LAB-EX-FW.lower() == 'yes'
+
+    - name: Get the LAB-EX-FW VM New ID
+      shell: vim-cmd vmsvc/getallvms | grep LAB-EX-FW | awk '{print $1}'
+      register: vm_id
+      when: LAB-EX-FW.lower() == 'yes'
+
+
+    - name: answer the question for LAB-EX-FW VM to be powerd on
+      shell: "vim-cmd vmsvc/message {{ vm_id.stdout }} {{ message.stdout }} 1 "
+      when: LAB-EX-FW.lower() == 'yes'
