@@ -1,0 +1,119 @@
+---
+- name: Playbook to revert Esxi VMs to their snapshots and reset the UUID of the VM
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Generate New UUID for the VM single VM reset
+      shell:  uuidgen | perl -ne '{ s/-//g; s/(.{2})/\1 /g; substr($_,23,1,"-"); print ; }' > /tmp/single.txt
+
+- name: Running the original playbook on the esxi host
+  hosts: esxi2
+  gather_facts: false
+  vars_prompt:
+    - name: username
+      prompt: Enter Esxi2 Username
+      private: no
+    - name: password
+      prompt: Enter Esxi2 Password
+      private: yes
+    - name: vm_name
+      prompt: Enter the VMname to be restored
+      private:  no
+  vars:
+    single_uuid_digits: "{{ lookup('file', '/tmp/single.txt') | regex_replace('\n', '') }}"
+    single_uuid: $(vim-cmd vmsvc/getallvms | grep {{vm_name}} | awk '{print $1}')
+
+  tasks:
+
+    - name: Powering off the {{vm_name}} VM
+      shell: vim-cmd vmsvc/power.off $(vim-cmd vmsvc/getallvms | grep {{vm_name}} | awk '{print $1}')
+      async: 30
+      poll: 0
+
+
+    - name: backing up the VMX file for {{vm_name} VM
+      shell: cp /vmfs/volumes/datastore1/{{vm_name}}/{{vm_name}}.vmx /backup
+
+
+    - name: Revert {{vm_name}} VM SNAPSHOT
+      shell: "/bin/vim-cmd vmsvc/snapshot.revert {{single_uuid}} 1 VIMCMD_ROOT_SESSION: {{username}}:{{password}}@localhost"
+
+
+
+    - name: delete the uuid from the vmx file for {{vm_name}}
+      shell: sed -i '/uuid.location/d' /vmfs/volumes/datastore1/{{vm_name}}/{{vm_name}}.vmx
+
+
+
+    - name: delete the bios uuid for {{vm_name}} VMx file
+      shell: sed -i '/uuid.bios/d' /vmfs/volumes/datastore1/{{vm_name}}/{{vm_name}}.vmx  
+
+
+
+    - name: copy the uuid of the {{vm_name}} VM to the ESXI TMP Directory
+      copy:
+        src: /tmp/single.txt
+        dest: /tmp/single.txt
+
+
+
+    - name: update uuid BIOS  on the VMX file for the {{vm_name}} VM
+      lineinfile:
+        path: /vmfs/volumes/datastore1/{{vm_name}}/{{vm_name}}.vmx
+        line: 'uuid.bios = "{{ single_uuid_digits }}"'
+
+
+
+    - name: update uuid Location for {{vm_name}} VM
+      lineinfile:
+        path: /vmfs/volumes/datastore1/{{vm_name}}/{{vm_name}}.vmx
+        line: 'uuid.location = "{{ single_uuid_digits }}"'
+
+
+
+    - name: unregister the {{vm_name}} VM
+      shell: vim-cmd vmsvc/unregister $(vim-cmd vmsvc/getallvms | grep {{vm_name}} | awk '{print $1}')
+
+
+    - name: register the {{vm_name}} vm
+      shell: "vim-cmd solo/registervm /vmfs/volumes/datastore1/{{vm_name}}/{{vm_name}}.vmx"
+
+
+    - name: Power On {{vm_name}} VM
+      shell: vim-cmd vmsvc/power.on $(vim-cmd vmsvc/getallvms | grep {{vm_name}} | awk '{print $1}')
+      async: 30
+      poll: 0
+
+
+
+    - name: pause
+      pause:
+        seconds: 30
+
+
+    - name: Get the Pending powering on question ID
+      shell: vim-cmd vmsvc/message  $(vim-cmd vmsvc/getallvms | grep {{vm_name}} | awk '{print $1}')  | awk 'NR==1 { gsub(/[^0-9]/, ""); print }'
+      register: message
+
+
+
+    - name:
+      debug:
+        var: message.stdout
+
+
+
+    - name: pause for powering on
+      pause:
+        seconds: 30
+
+    - name: Get the {{vm_name}} VM New ID
+      shell: vim-cmd vmsvc/getallvms | grep {{vm_name}} | awk '{print $1}'
+      register: vm_id
+
+
+
+    - name: answer the question for {{vm_name}} VM to be powerd on
+      shell: "vim-cmd vmsvc/message {{ vm_id.stdout }} {{ message.stdout }} 1 "
+
+
