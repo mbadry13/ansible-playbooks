@@ -209,13 +209,13 @@
 
     - name: Get the Pending powering on question ID
       shell: vim-cmd vmsvc/message  $(vim-cmd vmsvc/getallvms | grep LAB-HELK | awk '{print $1}')  | awk 'NR==1 { gsub(/[^0-9]/, ""); print }'
-      register: message
+      register: messagehelk
       when: LAB-HELK.lower() == 'yes'
 
 
     - name:
       debug:
-        var: message.stdout
+        var: messagehelk.stdout
       when: LAB-HELK.lower() == 'yes'
 
 
@@ -226,12 +226,12 @@
 
     - name: Get the LAB-HELK VM New ID
       shell: vim-cmd vmsvc/getallvms | grep LAB-HELK | awk '{print $1}'
-      register: vm_id
+      register: vm_idhelk
       when: LAB-HELK.lower() == 'yes'
 
 
     - name: answer the question for LAB-HELK VM to be powerd on
-      shell: "vim-cmd vmsvc/message {{ vm_id.stdout }} {{ message.stdout }} 1 "
+      shell: "vim-cmd vmsvc/message {{ vm_idhelk.stdout }} {{ messagehelk.stdout }} 1 "
       when: LAB-HELK.lower() == 'yes'
 
 
@@ -309,13 +309,13 @@
 
     - name: Get the Pending powering on question ID
       shell: vim-cmd vmsvc/message  $(vim-cmd vmsvc/getallvms | grep LAB-HIVE | awk '{print $1}')  | awk 'NR==1 { gsub(/[^0-9]/, ""); print }'
-      register: message
+      register: messagehive
       when: LAB-HIVE.lower() == 'yes'
 
 
     - name:
       debug:
-        var: message.stdout
+        var: messagehive.stdout
       when: LAB-HIVE.lower() == 'yes'
 
 
@@ -326,12 +326,12 @@
 
     - name: Get the LAB-HIVE VM New ID
       shell: vim-cmd vmsvc/getallvms | grep LAB-HIVE | awk '{print $1}'
-      register: vm_id
+      register: vm_idhive
       when: LAB-HIVE.lower() == 'yes'
 
 
     - name: answer the question for LAB-HIVE VM to be powerd on
-      shell: "vim-cmd vmsvc/message {{ vm_id.stdout }} {{ message.stdout }} 1 "
+      shell: "vim-cmd vmsvc/message {{ vm_idhive.stdout }} {{ messagehive.stdout }} 1 "
       when: LAB-HIVE.lower() == 'yes'
 
                                                                                                                         
@@ -408,13 +408,13 @@
 
     - name: Get the Pending powering on question ID
       shell: vim-cmd vmsvc/message  $(vim-cmd vmsvc/getallvms | grep LAB-CORT | awk '{print $1}')  | awk 'NR==1 { gsub(/[^0-9]/, ""); print }'
-      register: message
+      register: messagecort
       when: LAB-CORT.lower() == 'yes'
 
 
     - name:
       debug:
-        var: message.stdout
+        var: messagecort.stdout
       when: LAB-CORT.lower() == 'yes'
 
 
@@ -425,12 +425,12 @@
 
     - name: Get the LAB-CORT VM New ID
       shell: vim-cmd vmsvc/getallvms | grep LAB-CORT | awk '{print $1}'
-      register: vm_id
+      register: vm_idcort
       when: LAB-CORT.lower() == 'yes'
 
 
     - name: answer the question for LAB-CORT VM to be powerd on
-      shell: "vim-cmd vmsvc/message {{ vm_id.stdout }} {{ message.stdout }} 1 "
+      shell: "vim-cmd vmsvc/message {{ vm_idcort.stdout }} {{ messagecort.stdout }} 1 "
       when: LAB-CORT.lower() == 'yes'
 
                                                                                                                         
@@ -508,13 +508,13 @@
 
     - name: Get the Pending powering on question ID
       shell: vim-cmd vmsvc/message  $(vim-cmd vmsvc/getallvms | grep LAB-MISP | awk '{print $1}')  | awk 'NR==1 { gsub(/[^0-9]/, ""); print }'
-      register: message
+      register: messagemisp
       when: LAB-MISP.lower() == 'yes'
 
 
     - name:
       debug:
-        var: message.stdout
+        var: messagemisp.stdout
       when: LAB-MISP.lower() == 'yes'
 
 
@@ -525,12 +525,12 @@
 
     - name: Get the LAB-MISP VM New ID
       shell: vim-cmd vmsvc/getallvms | grep LAB-MISP | awk '{print $1}'
-      register: vm_id
+      register: vm_idmisp
       when: LAB-MISP.lower() == 'yes'
 
 
     - name: answer the question for LAB-MISP VM to be powerd on
-      shell: "vim-cmd vmsvc/message {{ vm_id.stdout }} {{ message.stdout }} 1 "
+      shell: "vim-cmd vmsvc/message {{ vm_idmisp.stdout }} {{ messagemisp.stdout }} 1 "
       when: LAB-MISP.lower() == 'yes'
 
                                                                                                                         
@@ -607,13 +607,13 @@
 
     - name: Get the Pending powering on question ID
       shell: vim-cmd vmsvc/message  $(vim-cmd vmsvc/getallvms | grep LAB-CL1 | awk '{print $1}')  | awk 'NR==1 { gsub(/[^0-9]/, ""); print }'
-      register: message
+      register: messagecl
       when: LAB-CL1.lower() == 'yes'
 
 
     - name:
       debug:
-        var: message.stdout
+        var: messagecl.stdout
       when: LAB-CL1.lower() == 'yes'
 
 
@@ -624,12 +624,12 @@
 
     - name: Get the LAB-CL1 VM New ID
       shell: vim-cmd vmsvc/getallvms | grep LAB-CL1 | awk '{print $1}'
-      register: vm_id
+      register: vm_idcl
       when: LAB-CL1.lower() == 'yes'
 
 
     - name: answer the question for LAB-CL1 VM to be powerd on
-      shell: "vim-cmd vmsvc/message {{ vm_id.stdout }} {{ message.stdout }} 1 "
+      shell: "vim-cmd vmsvc/message {{ vm_idcl.stdout }} {{ messagecl.stdout }} 1 "
       when: LAB-CL1.lower() == 'yes'
 
                                                                                                                         
@@ -707,13 +707,13 @@
 
     - name: Get the Pending powering on question ID
       shell: vim-cmd vmsvc/message  $(vim-cmd vmsvc/getallvms | grep LAB-WEB | awk '{print $1}')  | awk 'NR==1 { gsub(/[^0-9]/, ""); print }'
-      register: message
+      register: messageweb
       when: LAB-WEB.lower() == 'yes'
 
 
     - name:
       debug:
-        var: message.stdout
+        var: messageweb.stdout
       when: LAB-WEB.lower() == 'yes'
 
 
@@ -724,12 +724,12 @@
 
     - name: Get the LAB-WEB VM New ID
       shell: vim-cmd vmsvc/getallvms | grep LAB-WEB | awk '{print $1}'
-      register: vm_id
+      register: vm_idweb
       when: LAB-WEB.lower() == 'yes'
 
 
     - name: answer the question for LAB-WEB VM to be powerd on
-      shell: "vim-cmd vmsvc/message {{ vm_id.stdout }} {{ message.stdout }} 1 "
+      shell: "vim-cmd vmsvc/message {{ vm_idweb.stdout }} {{ messageweb.stdout }} 1 "
       when: LAB-WEB.lower() == 'yes'
 
                                                                                                                         
@@ -808,13 +808,13 @@
 
     - name: Get the Pending powering on question ID
       shell: vim-cmd vmsvc/message  $(vim-cmd vmsvc/getallvms | grep LAB-DB | awk '{print $1}')  | awk 'NR==1 { gsub(/[^0-9]/, ""); print }'
-      register: message
+      register: messagedb
       when: LAB-DB.lower() == 'yes'
 
 
     - name:
       debug:
-        var: message.stdout
+        var: messagedb.stdout
       when: LAB-DB.lower() == 'yes'
 
 
@@ -825,12 +825,12 @@
 
     - name: Get the LAB-DB VM New ID
       shell: vim-cmd vmsvc/getallvms | grep LAB-DB | awk '{print $1}'
-      register: vm_id
+      register: vm_iddb
       when: LAB-DB.lower() == 'yes'
 
 
     - name: answer the question for LAB-DB VM to be powerd on
-      shell: "vim-cmd vmsvc/message {{ vm_id.stdout }} {{ message.stdout }} 1 "
+      shell: "vim-cmd vmsvc/message {{ vm_iddb.stdout }} {{ messagedb.stdout }} 1 "
       when: LAB-DB.lower() == 'yes'
 
                                                                                                                         
@@ -907,13 +907,13 @@
 
     - name: Get the Pending powering on question ID
       shell: vim-cmd vmsvc/message  $(vim-cmd vmsvc/getallvms | grep LAB-EXCH | awk '{print $1}')  | awk 'NR==1 { gsub(/[^0-9]/, ""); print }'
-      register: message
+      register: messageex
       when: LAB-EXCH.lower() == 'yes'
 
 
     - name:
       debug:
-        var: message.stdout
+        var: messageex.stdout
       when: LAB-EXCH.lower() == 'yes'
 
 
@@ -924,12 +924,12 @@
 
     - name: Get the LAB-EXCH VM New ID
       shell: vim-cmd vmsvc/getallvms | grep LAB-EXCH | awk '{print $1}'
-      register: vm_id
+      register: vm_idex
       when: LAB-EXCH.lower() == 'yes'
 
 
     - name: answer the question for LAB-EXCH VM to be powerd on
-      shell: "vim-cmd vmsvc/message {{ vm_id.stdout }} {{ message.stdout }} 1 "
+      shell: "vim-cmd vmsvc/message {{ vm_idex.stdout }} {{ messageex.stdout }} 1 "
       when: LAB-EXCH.lower() == 'yes'
 
                                                                              
@@ -1005,13 +1005,13 @@
 
     - name: Get the Pending powering on question ID
       shell: vim-cmd vmsvc/message  $(vim-cmd vmsvc/getallvms | grep LAB-CL2 | awk '{print $1}')  | awk 'NR==1 { gsub(/[^0-9]/, ""); print }'
-      register: message
+      register: messagecll
       when: LAB-CL2.lower() == 'yes'
 
 
     - name:
       debug:
-        var: message.stdout
+        var: messagecll.stdout
       when: LAB-CL2.lower() == 'yes'
 
 
@@ -1022,12 +1022,12 @@
 
     - name: Get the LAB-CL2 VM New ID
       shell: vim-cmd vmsvc/getallvms | grep LAB-CL2 | awk '{print $1}'
-      register: vm_id
+      register: vm_idcll
       when: LAB-CL2.lower() == 'yes'
 
 
     - name: answer the question for LAB-CL2 VM to be powerd on
-      shell: "vim-cmd vmsvc/message {{ vm_id.stdout }} {{ message.stdout }} 1 "
+      shell: "vim-cmd vmsvc/message {{ vm_idcll.stdout }} {{ messagecll.stdout }} 1 "
       when: LAB-CL2.lower() == 'yes'
 
 
@@ -1104,13 +1104,13 @@
 
     - name: Get the Pending powering on question ID
       shell: vim-cmd vmsvc/message  $(vim-cmd vmsvc/getallvms | grep LAB-WAPP | awk '{print $1}')  | awk 'NR==1 { gsub(/[^0-9]/, ""); print }'
-      register: message
+      register: messagewapp
       when: LAB-WAPP.lower() == 'yes'
 
 
     - name:
       debug:
-        var: message.stdout
+        var: messagewapp.stdout
       when: LAB-WAPP.lower() == 'yes'
 
 
@@ -1121,12 +1121,12 @@
 
     - name: Get the LAB-WAPP VM New ID
       shell: vim-cmd vmsvc/getallvms | grep LAB-WAPP | awk '{print $1}'
-      register: vm_id
+      register: vm_idwapp
       when: LAB-WAPP.lower() == 'yes'
 
 
     - name: answer the question for LAB-WAPP VM to be powerd on
-      shell: "vim-cmd vmsvc/message {{ vm_id.stdout }} {{ message.stdout }} 1 "
+      shell: "vim-cmd vmsvc/message {{ vm_idwapp.stdout }} {{ messagewapp.stdout }} 1 "
       when: LAB-WAPP.lower() == 'yes'
 
 
@@ -1205,13 +1205,13 @@
 
     - name: Get the Pending powering on question ID
       shell: vim-cmd vmsvc/message  $(vim-cmd vmsvc/getallvms | grep LAB-AD1 | awk '{print $1}')  | awk 'NR==1 { gsub(/[^0-9]/, ""); print }'
-      register: message
+      register: messagead
       when: LAB-AD1.lower() == 'yes'
 
 
     - name:
       debug:
-        var: message.stdout
+        var: messagead.stdout
       when: LAB-AD1.lower() == 'yes'
 
 
@@ -1222,12 +1222,12 @@
 
     - name: Get the LAB-AD1 VM New ID
       shell: vim-cmd vmsvc/getallvms | grep LAB-AD1 | awk '{print $1}'
-      register: vm_id
+      register: vm_idad
       when: LAB-AD1.lower() == 'yes'
 
 
     - name: answer the question for LAB-AD1 VM to be powerd on
-      shell: "vim-cmd vmsvc/message {{ vm_id.stdout }} {{ message.stdout }} 1 "
+      shell: "vim-cmd vmsvc/message {{ vm_idad.stdout }} {{ messagead.stdout }} 1 "
       when: LAB-AD1.lower() == 'yes'
 
 
@@ -1304,13 +1304,13 @@
 
     - name: Get the Pending powering on question ID
       shell: vim-cmd vmsvc/message  $(vim-cmd vmsvc/getallvms | grep LAB-AD2 | awk '{print $1}')  | awk 'NR==1 { gsub(/[^0-9]/, ""); print }'
-      register: message
+      register: messageadd
       when: LAB-AD2.lower() == 'yes'
 
 
     - name:
       debug:
-        var: message.stdout
+        var: messageadd.stdout
       when: LAB-AD2.lower() == 'yes'
 
 
@@ -1321,12 +1321,12 @@
 
     - name: Get the LAB-AD2 VM New ID
       shell: vim-cmd vmsvc/getallvms | grep LAB-AD2 | awk '{print $1}'
-      register: vm_id
+      register: vm_idadd
       when: LAB-AD2.lower() == 'yes'
 
 
     - name: answer the question for LAB-AD2 VM to be powerd on
-      shell: "vim-cmd vmsvc/message {{ vm_id.stdout }} {{ message.stdout }} 1 "
+      shell: "vim-cmd vmsvc/message {{ vm_idadd.stdout }} {{ messageadd.stdout }} 1 "
       when: LAB-AD2.lower() == 'yes'
 
 
@@ -1404,13 +1404,13 @@
 
     - name: Get the Pending powering on question ID
       shell: vim-cmd vmsvc/message  $(vim-cmd vmsvc/getallvms | grep LAB-DFW | awk '{print $1}')  | awk 'NR==1 { gsub(/[^0-9]/, ""); print }'
-      register: message
+      register: messagedfw
       when: LAB-DFW.lower() == 'yes'
 
 
     - name:
       debug:
-        var: message.stdout
+        var: messagedfw.stdout
       when: LAB-DFW.lower() == 'yes'
 
 
@@ -1421,12 +1421,12 @@
 
     - name: Get the LAB-DFW VM New ID
       shell: vim-cmd vmsvc/getallvms | grep LAB-DFW | awk '{print $1}'
-      register: vm_id
+      register: vm_iddfw
       when: LAB-DFW.lower() == 'yes'
 
 
     - name: answer the question for LAB-DFW VM to be powerd on
-      shell: "vim-cmd vmsvc/message {{ vm_id.stdout }} {{ message.stdout }} 1 "
+      shell: "vim-cmd vmsvc/message {{ vm_iddfw.stdout }} {{ messagedfw.stdout }} 1 "
       when: LAB-DFW.lower() == 'yes'
 
 
@@ -1503,13 +1503,13 @@
 
     - name: Get the Pending powering on question ID
       shell: vim-cmd vmsvc/message  $(vim-cmd vmsvc/getallvms | grep LAB-RFW | awk '{print $1}')  | awk 'NR==1 { gsub(/[^0-9]/, ""); print }'
-      register: message
+      register: messagerfw
       when: LAB-RFW.lower() == 'yes'
 
 
     - name:
       debug:
-        var: message.stdout
+        var: messagerfw.stdout
       when: LAB-RFW.lower() == 'yes'
 
 
@@ -1520,12 +1520,12 @@
 
     - name: Get the LAB-RFW VM New ID
       shell: vim-cmd vmsvc/getallvms | grep LAB-RFW | awk '{print $1}'
-      register: vm_id
+      register: vm_idrfw
       when: LAB-RFW.lower() == 'yes'
 
 
     - name: answer the question for LAB-RFW VM to be powerd on
-      shell: "vim-cmd vmsvc/message {{ vm_id.stdout }} {{ message.stdout }} 1 "
+      shell: "vim-cmd vmsvc/message {{ vm_idrfw.stdout }} {{ messagerfw.stdout }} 1 "
       when: LAB-RFW.lower() == 'yes'
 
 
@@ -1602,13 +1602,13 @@
 
     - name: Get the Pending powering on question ID
       shell: vim-cmd vmsvc/message  $(vim-cmd vmsvc/getallvms | grep LAB-EDR | awk '{print $1}')  | awk 'NR==1 { gsub(/[^0-9]/, ""); print }'
-      register: message
+      register: messageedr
       when: LAB-EDR.lower() == 'yes'
 
 
     - name:
       debug:
-        var: message.stdout
+        var: messageedr.stdout
       when: LAB-EDR.lower() == 'yes'
 
 
@@ -1619,12 +1619,12 @@
 
     - name: Get the LAB-EDR VM New ID
       shell: vim-cmd vmsvc/getallvms | grep LAB-EDR | awk '{print $1}'
-      register: vm_id
+      register: vm_idedr
       when: LAB-EDR.lower() == 'yes'
 
 
     - name: answer the question for LAB-EDR VM to be powerd on
-      shell: "vim-cmd vmsvc/message {{ vm_id.stdout }} {{ message.stdout }} 1 "
+      shell: "vim-cmd vmsvc/message {{ vm_idedr.stdout }} {{ messageedr.stdout }} 1 "
       when: LAB-EDR.lower() == 'yes'
 
 
@@ -1700,13 +1700,13 @@
 
     - name: Get the Pending powering on question ID
       shell: vim-cmd vmsvc/message  $(vim-cmd vmsvc/getallvms | grep LAB-DC-FW | awk '{print $1}')  | awk 'NR==1 { gsub(/[^0-9]/, ""); print }'
-      register: message
+      register: messagedcfw
       when: LAB-DC-FW.lower() == 'yes'
 
 
     - name:
       debug:
-        var: message.stdout
+        var: messagedcfw.stdout
       when: LAB-DC-FW.lower() == 'yes'
 
 
@@ -1717,12 +1717,12 @@
 
     - name: Get the LAB-DC-FW VM New ID
       shell: vim-cmd vmsvc/getallvms | grep LAB-DC-FW | awk '{print $1}'
-      register: vm_id
+      register: vm_iddcfw
       when: LAB-DC-FW.lower() == 'yes'
 
 
     - name: answer the question for LAB-DC-FW VM to be powerd on
-      shell: "vim-cmd vmsvc/message {{ vm_id.stdout }} {{ message.stdout }} 1 "
+      shell: "vim-cmd vmsvc/message {{ vm_iddcfw.stdout }} {{ messagedcfw.stdout }} 1 "
       when: LAB-DC-FW.lower() == 'yes'
 
 
@@ -1797,13 +1797,13 @@
 
     - name: Get the Pending powering on question ID
       shell: vim-cmd vmsvc/message  $(vim-cmd vmsvc/getallvms | grep LAB-EX-FW | awk '{print $1}')  | awk 'NR==1 { gsub(/[^0-9]/, ""); print }'
-      register: message
+      register: messagefw
       when: LAB-EX-FW.lower() == 'yes'
 
 
     - name:
       debug:
-        var: message.stdout
+        var: messagefw.stdout
       when: LAB-EX-FW.lower() == 'yes'
 
 
@@ -1814,10 +1814,10 @@
 
     - name: Get the LAB-EX-FW VM New ID
       shell: vim-cmd vmsvc/getallvms | grep LAB-EX-FW | awk '{print $1}'
-      register: vm_id
+      register: vm_idfw
       when: LAB-EX-FW.lower() == 'yes'
 
 
     - name: answer the question for LAB-EX-FW VM to be powerd on
-      shell: "vim-cmd vmsvc/message {{ vm_id.stdout }} {{ message.stdout }} 1 "
+      shell: "vim-cmd vmsvc/message {{ vm_idfw.stdout }} {{ messagefw.stdout }} 1 "
       when: LAB-EX-FW.lower() == 'yes'
