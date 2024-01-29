@@ -79,6 +79,12 @@
     LAB-EX-FW_uuid_digits: "{{ lookup('file', '/tmp/LAB-EX-FW.txt') | regex_replace('\n', '') }}"
     LAB-EX-FW_uuid: $(vim-cmd vmsvc/getallvms | grep LAB-EX-FW | awk '{print $1}')
   vars_prompt:
+    - name: username
+      prompt: Enter Esxi2 Username
+      private: no
+    - name: password
+      prompt: Enter Esxi2 Password
+      private: yes
     - name: LAB-HELK
       prompt: "Do you want to revert and reset LAB-HELK VM? (yes/no)"
       private: no
@@ -144,7 +150,7 @@
       when: LAB-HELK.lower() == 'yes'
 
     - name: Revert LAB-HELK VM SNAPSHOT
-      shell: "/bin/vim-cmd vmsvc/snapshot.revert {{LAB-HELK_uuid}} 1 VIMCMD_ROOT_SESSION: root:P@ssw0rd@localhost"
+      shell: "/bin/vim-cmd vmsvc/snapshot.revert {{LAB-HELK_uuid}} 1 VIMCMD_ROOT_SESSION: {{username}}:{{password}}@localhost"
       when: LAB-HELK.lower() == 'yes'
 
 
@@ -244,7 +250,7 @@
       when: LAB-HIVE.lower() == 'yes'
 
     - name: Revert LAB-HIVE VM SNAPSHOT
-      shell: "/bin/vim-cmd vmsvc/snapshot.revert {{LAB-HIVE_uuid}} 1 VIMCMD_ROOT_SESSION: root:P@ssw0rd@localhost"
+      shell: "/bin/vim-cmd vmsvc/snapshot.revert {{LAB-HIVE_uuid}} 1 VIMCMD_ROOT_SESSION: {{username}}:{{password}}@localhost"
       when: LAB-HIVE.lower() == 'yes'
 
 
@@ -343,7 +349,7 @@
       when: LAB-CORT.lower() == 'yes'
 
     - name: Revert LAB-CORT VM SNAPSHOT
-      shell: "/bin/vim-cmd vmsvc/snapshot.revert {{LAB-CORT_uuid}} 1 VIMCMD_ROOT_SESSION: root:P@ssw0rd@localhost"
+      shell: "/bin/vim-cmd vmsvc/snapshot.revert {{LAB-CORT_uuid}} 1 VIMCMD_ROOT_SESSION: {{username}}:{{password}}@localhost"
       when: LAB-CORT.lower() == 'yes'
 
 
@@ -443,7 +449,7 @@
       when: LAB-MISP.lower() == 'yes'
 
     - name: Revert LAB-MISP VM SNAPSHOT
-      shell: "/bin/vim-cmd vmsvc/snapshot.revert {{LAB-MISP_uuid}} 1 VIMCMD_ROOT_SESSION: root:P@ssw0rd@localhost"
+      shell: "/bin/vim-cmd vmsvc/snapshot.revert {{LAB-MISP_uuid}} 1 VIMCMD_ROOT_SESSION: {{username}}:{{password}}@localhost"
       when: LAB-MISP.lower() == 'yes'
 
 
@@ -542,7 +548,7 @@
       when: LAB-CL1.lower() == 'yes'
 
     - name: Revert LAB-CL1 VM SNAPSHOT
-      shell: "/bin/vim-cmd vmsvc/snapshot.revert {{LAB-CL1_uuid}} 1 VIMCMD_ROOT_SESSION: root:P@ssw0rd@localhost"
+      shell: "/bin/vim-cmd vmsvc/snapshot.revert {{LAB-CL1_uuid}} 1 VIMCMD_ROOT_SESSION: {{username}}:{{password}}@localhost"
       when: LAB-CL1.lower() == 'yes'
 
 
@@ -642,7 +648,7 @@
       when: LAB-WEB.lower() == 'yes'
 
     - name: Revert LAB-WEB VM SNAPSHOT
-      shell: "/bin/vim-cmd vmsvc/snapshot.revert {{LAB-WEB_uuid}} 1 VIMCMD_ROOT_SESSION: root:P@ssw0rd@localhost"
+      shell: "/bin/vim-cmd vmsvc/snapshot.revert {{LAB-WEB_uuid}} 1 VIMCMD_ROOT_SESSION: {{username}}:{{password}}@localhost"
       when: LAB-WEB.lower() == 'yes'
 
 
@@ -743,7 +749,7 @@
       when: LAB-DB.lower() == 'yes'
 
     - name: Revert LAB-DB VM SNAPSHOT
-      shell: "/bin/vim-cmd vmsvc/snapshot.revert {{LAB-DB_uuid}} 1 VIMCMD_ROOT_SESSION: root:P@ssw0rd@localhost"
+      shell: "/bin/vim-cmd vmsvc/snapshot.revert {{LAB-DB_uuid}} 1 VIMCMD_ROOT_SESSION: {{username}}:{{password}}@localhost"
       when: LAB-DB.lower() == 'yes'
 
 
@@ -842,7 +848,7 @@
       when: LAB-EXCH.lower() == 'yes'
 
     - name: Revert LAB-EXCH VM SNAPSHOT
-      shell: "/bin/vim-cmd vmsvc/snapshot.revert {{LAB-EXCH_uuid}} 1 VIMCMD_ROOT_SESSION: root:P@ssw0rd@localhost"
+      shell: "/bin/vim-cmd vmsvc/snapshot.revert {{LAB-EXCH_uuid}} 1 VIMCMD_ROOT_SESSION: {{username}}:{{password}}@localhost"
       when: LAB-EXCH.lower() == 'yes'
 
 
@@ -940,7 +946,7 @@
       when: LAB-CL2.lower() == 'yes'
 
     - name: Revert LAB-CL2 VM SNAPSHOT
-      shell: "/bin/vim-cmd vmsvc/snapshot.revert {{LAB-CL2_uuid}} 1 VIMCMD_ROOT_SESSION: root:P@ssw0rd@localhost"
+      shell: "/bin/vim-cmd vmsvc/snapshot.revert {{LAB-CL2_uuid}} 1 VIMCMD_ROOT_SESSION: {{username}}:{{password}}@localhost"
       when: LAB-CL2.lower() == 'yes'
 
 
@@ -1039,7 +1045,7 @@
       when: LAB-WAPP.lower() == 'yes'
 
     - name: Revert LAB-WAPP VM SNAPSHOT
-      shell: "/bin/vim-cmd vmsvc/snapshot.revert {{LAB-WAPP_uuid}} 1 VIMCMD_ROOT_SESSION: root:P@ssw0rd@localhost"
+      shell: "/bin/vim-cmd vmsvc/snapshot.revert {{LAB-WAPP_uuid}} 1 VIMCMD_ROOT_SESSION: {{username}}:{{password}}@localhost"
       when: LAB-WAPP.lower() == 'yes'
 
 
@@ -1140,7 +1146,7 @@
       when: LAB-AD1.lower() == 'yes'
 
     - name: Revert LAB-AD1 VM SNAPSHOT
-      shell: "/bin/vim-cmd vmsvc/snapshot.revert {{LAB-AD1_uuid}} 1 VIMCMD_ROOT_SESSION: root:P@ssw0rd@localhost"
+      shell: "/bin/vim-cmd vmsvc/snapshot.revert {{LAB-AD1_uuid}} 1 VIMCMD_ROOT_SESSION: {{username}}:{{password}}@localhost"
       when: LAB-AD1.lower() == 'yes'
 
 
@@ -1239,7 +1245,7 @@
       when: LAB-AD2.lower() == 'yes'
 
     - name: Revert LAB-AD2 VM SNAPSHOT
-      shell: "/bin/vim-cmd vmsvc/snapshot.revert {{LAB-AD2_uuid}} 1 VIMCMD_ROOT_SESSION: root:P@ssw0rd@localhost"
+      shell: "/bin/vim-cmd vmsvc/snapshot.revert {{LAB-AD2_uuid}} 1 VIMCMD_ROOT_SESSION: {{username}}:{{password}}@localhost"
       when: LAB-AD2.lower() == 'yes'
 
 
@@ -1339,7 +1345,7 @@
       when: LAB-DFW.lower() == 'yes'
 
     - name: Revert LAB-DFW VM SNAPSHOT
-      shell: "/bin/vim-cmd vmsvc/snapshot.revert {{LAB-DFW_uuid}} 1 VIMCMD_ROOT_SESSION: root:P@ssw0rd@localhost"
+      shell: "/bin/vim-cmd vmsvc/snapshot.revert {{LAB-DFW_uuid}} 1 VIMCMD_ROOT_SESSION: {{username}}:{{password}}@localhost"
       when: LAB-DFW.lower() == 'yes'
 
 
@@ -1438,7 +1444,7 @@
       when: LAB-RFW.lower() == 'yes'
 
     - name: Revert LAB-RFW VM SNAPSHOT
-      shell: "/bin/vim-cmd vmsvc/snapshot.revert {{LAB-RFW_uuid}} 1 VIMCMD_ROOT_SESSION: root:P@ssw0rd@localhost"
+      shell: "/bin/vim-cmd vmsvc/snapshot.revert {{LAB-RFW_uuid}} 1 VIMCMD_ROOT_SESSION: {{username}}:{{password}}@localhost"
       when: LAB-RFW.lower() == 'yes'
 
 
@@ -1537,7 +1543,7 @@
       when: LAB-EDR.lower() == 'yes'
 
     - name: Revert LAB-EDR VM SNAPSHOT
-      shell: "/bin/vim-cmd vmsvc/snapshot.revert {{LAB-EDR_uuid}} 1 VIMCMD_ROOT_SESSION: root:P@ssw0rd@localhost"
+      shell: "/bin/vim-cmd vmsvc/snapshot.revert {{LAB-EDR_uuid}} 1 VIMCMD_ROOT_SESSION: {{username}}:{{password}}@localhost"
       when: LAB-EDR.lower() == 'yes'
 
 
@@ -1635,7 +1641,7 @@
       when: LAB-DC-FW.lower() == 'yes'
 
     - name: Revert LAB-DC-FW VM SNAPSHOT
-      shell: "/bin/vim-cmd vmsvc/snapshot.revert {{LAB-DC-FW_uuid}} 1 VIMCMD_ROOT_SESSION: root:P@ssw0rd@localhost"
+      shell: "/bin/vim-cmd vmsvc/snapshot.revert {{LAB-DC-FW_uuid}} 1 VIMCMD_ROOT_SESSION: {{username}}:{{password}}@localhost"
       when: LAB-DC-FW.lower() == 'yes'
 
 
@@ -1732,7 +1738,7 @@
       when: LAB-EX-FW.lower() == 'yes'
 
     - name: Revert LAB-EX-FW VM SNAPSHOT
-      shell: "/bin/vim-cmd vmsvc/snapshot.revert {{LAB-EX-FW_uuid}} 1 VIMCMD_ROOT_SESSION: root:P@ssw0rd@localhost"
+      shell: "/bin/vim-cmd vmsvc/snapshot.revert {{LAB-EX-FW_uuid}} 1 VIMCMD_ROOT_SESSION: {{username}}:{{password}}@localhost"
       when: LAB-EX-FW.lower() == 'yes'
 
 
