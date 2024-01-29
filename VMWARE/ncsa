@@ -72,10 +72,10 @@
     LAB_RFW_uuid: $(vim-cmd vmsvc/getallvms | grep LAB-RFW | awk '{print $1}')
     LAB_EDR_uuid_digits: "{{ lookup('file', '/tmp/LAB-EDR.txt') | regex_replace('\n', '') }}"
     LAB_EDR_uuid: $(vim-cmd vmsvc/getallvms | grep LAB-EDR | awk '{print $1}')
-    LAB_DC-FW_uuid_digits: "{{ lookup('file', '/tmp/LAB-DC-FW.txt') | regex_replace('\n', '') }}"
-    LAB_DC-FW_uuid: $(vim-cmd vmsvc/getallvms | grep LAB-DC-FW | awk '{print $1}')
-    LAB_EX-FW_uuid_digits: "{{ lookup('file', '/tmp/LAB-EX-FW.txt') | regex_replace('\n', '') }}"
-    LAB_EX-FW_uuid: $(vim-cmd vmsvc/getallvms | grep LAB-EX-FW | awk '{print $1}')
+    LAB_DC_FW_uuid_digits: "{{ lookup('file', '/tmp/LAB-DC-FW.txt') | regex_replace('\n', '') }}"
+    LAB_DC_FW_uuid: $(vim-cmd vmsvc/getallvms | grep LAB-DC-FW | awk '{print $1}')
+    LAB_EX_FW_uuid_digits: "{{ lookup('file', '/tmp/LAB-EX-FW.txt') | regex_replace('\n', '') }}"
+    LAB_EX_FW_uuid: $(vim-cmd vmsvc/getallvms | grep LAB-EX-FW | awk '{print $1}')
   vars_prompt:
     - name: username
       prompt: Enter Esxi2 Username
@@ -1639,7 +1639,7 @@
       when: LAB-DC-FW.lower() == 'yes'
 
     - name: Revert LAB-DC-FW VM SNAPSHOT
-      shell: "/bin/vim-cmd vmsvc/snapshot.revert {{LAB_DC-FW_uuid}} 1 VIMCMD_ROOT_SESSION: {{username}}:{{password}}@localhost"
+      shell: "/bin/vim-cmd vmsvc/snapshot.revert {{LAB_DC_FW_uuid}} 1 VIMCMD_ROOT_SESSION: {{username}}:{{password}}@localhost"
       when: LAB-DC-FW.lower() == 'yes'
 
 
@@ -1663,14 +1663,14 @@
     - name: update uuid BIOS  on the VMX file for the LAB-DC-FW VM
       lineinfile:
         path: /vmfs/volumes/datastore1/LAB-DC-FW/LAB-DC-FW.vmx
-        line: 'uuid.bios = "{{ LAB_DC-FW_uuid_digits }}"'
+        line: 'uuid.bios = "{{ LAB_DC_FW_uuid_digits }}"'
       when: LAB-DC-FW.lower() == 'yes'
 
 
     - name: update uuid Location for LAB-DC-FW VM
       lineinfile:
         path: /vmfs/volumes/datastore1/LAB-DC-FW/LAB-DC-FW.vmx
-        line: 'uuid.location = "{{ LAB_DC-FW_uuid_digits }}"'
+        line: 'uuid.location = "{{ LAB_DC_FW_uuid_digits }}"'
       when: LAB-DC-FW.lower() == 'yes'
 
 
@@ -1736,7 +1736,7 @@
       when: LAB-EX-FW.lower() == 'yes'
 
     - name: Revert LAB-EX-FW VM SNAPSHOT
-      shell: "/bin/vim-cmd vmsvc/snapshot.revert {{LAB_EX-FW_uuid}} 1 VIMCMD_ROOT_SESSION: {{username}}:{{password}}@localhost"
+      shell: "/bin/vim-cmd vmsvc/snapshot.revert {{LAB_EX_FW_uuid}} 1 VIMCMD_ROOT_SESSION: {{username}}:{{password}}@localhost"
       when: LAB-EX-FW.lower() == 'yes'
 
 
@@ -1760,14 +1760,14 @@
     - name: update uuid BIOS  on the VMX file for the LAB-EX-FW VM
       lineinfile:
         path: /vmfs/volumes/datastore1/LAB-EX-FW/LAB-EX-FW.vmx
-        line: 'uuid.bios = "{{ LAB_EX-FW_uuid_digits }}"'
+        line: 'uuid.bios = "{{ LAB_EX_FW_uuid_digits }}"'
       when: LAB-EX-FW.lower() == 'yes'
 
 
     - name: update uuid Location for LAB-EX-FW VM
       lineinfile:
         path: /vmfs/volumes/datastore1/LAB-EX-FW/LAB-EX-FW.vmx
-        line: 'uuid.location = "{{ LAB_EX-FW_uuid_digits }}"'
+        line: 'uuid.location = "{{ LAB_EX_FW_uuid_digits }}"'
       when: LAB-EX-FW.lower() == 'yes'
 
 
