@@ -1,0 +1,53 @@
+---
+- name: Save user passwords with hostnames to Excel
+  hosts: all
+  gather_facts: yes  # Gather facts to get the hostname
+  tasks:
+
+    - name: Create Python script to write passwords to Excel
+      copy:
+        dest: /save_passwords.py
+        content: |
+          import xlsxwriter
+          import sys
+
+          # Get the hostname from the command-line argument
+          hostname = sys.argv[1]
+
+          # User data (update as needed)
+          users = [
+              {"username": "user1", "password": "password1"},
+              {"username": "user2", "password": "password2"},
+              {"username": "user3", "password": "password3"},
+          ]
+
+          # Create a workbook and add a worksheet.
+          workbook = xlsxwriter.Workbook(f'user_passwords_{hostname}.xlsx')
+          worksheet = workbook.add_worksheet()
+
+          # Write headers
+          worksheet.write(0, 0, 'Hostname')
+          worksheet.write(0, 1, 'Username')
+          worksheet.write(0, 2, 'Password')
+
+          # Write user data
+          for row_num, user in enumerate(users, start=1):
+              worksheet.write(row_num, 0, hostname)
+              worksheet.write(row_num, 1, user['username'])
+              worksheet.write(row_num, 2, user['password'])
+
+          # Close the workbook
+          workbook.close()
+
+    - name: Run the Python script for each host
+      command: python3 /save_passwords.py {{ inventory_hostname }}
+      args:
+        chdir: /tmp
+
+    - name: Move the Excel file to a desired location
+      command: mv /tmp/user_passwords_{{ inventory_hostname }}.xlsx /user_passwords_{{ inventory_hostname }}.xlsx
+
+    - name: Clean up the Python script
+      file:
+        path: /tmp/save_passwords.py
+        state: absent
