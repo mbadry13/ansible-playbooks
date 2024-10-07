@@ -1,0 +1,22 @@
+---
+- name: Generate unique random password and update ansible user
+  hosts: all
+  become: yes
+  vars:
+    user: ansible
+    password_length: 16
+
+  tasks:
+    - name: Generate a unique random password for each host
+      set_fact:
+        generated_password: "{{ lookup('pipe', 'python3 -c \"import os, base64; print(base64.b64encode(os.urandom(12)).decode())\"') }}"
+
+    - name: Update the ansible user's password with the generated password
+      user:
+        name: "{{ user }}"
+        password: "{{ generated_password | password_hash('sha512') }}"
+      when: ansible_user is defined
+
+    - name: Display the generated password
+      debug:
+        msg: "The generated password for {{ inventory_hostname }} is: {{ generated_password }}"
