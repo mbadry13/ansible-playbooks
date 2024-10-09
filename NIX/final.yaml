@@ -1,0 +1,65 @@
+---
+- name: Generate unique random password and update ansible user
+  hosts: all
+  become: yes
+  vars:
+    user: ansible
+    password_length: 16
+
+  tasks:
+    - name: Generate a unique random password for each host
+      set_fact:
+        generated_password: "{{ lookup('password', '/dev/null length=16') | regex_replace('[^a-zA-Z0-9!@#$%^&*()_+]', '') }}"
+
+    - name: Update the ansible user's password with the generated password
+      user:
+        name: "{{ user }}"
+        password: "{{ generated_password | password_hash('sha512') }}"
+      #   when: ansible_user is defined
+
+    - name: Display the generated password
+      debug:
+        msg: "The generated password for {{ inventory_hostname }} is: {{ generated_password }}"
+
+    - name: Create a temporary CSV file with password information
+      copy:
+        content: |
+          Hostname,Description,Password
+          {{ ansible_hostname }},Root Password,{{ generated_password }}
+        dest: /tmp/root_password_{{ inventory_hostname }}.csv
+
+- name: Collect and merge CSV files from all clients
+  hosts: all
+  gather_facts: no
+  tasks:
+    - name: Collect all CSV files
+      fetch:
+        src: /tmp/root_password_{{ inventory_hostname }}.csv
+        dest: /tmp/csv_files/
+        flat: yes
+
+- name: Merge CSV files into one on Ansible control machine
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Ensure the output directory exists
+      file:
+        path: /tmp/csv_files
+        state: directory
+
+    - name: Merge all collected CSV files into one
+      shell: |
+        (head -n 1 /tmp/csv_files/*.csv | head -n 1 && tail -n +2 -q /tmp/csv_files/*.csv) > /tmp/merged_passwords.csv
+      args:
+        executable: /bin/bash
+
+    - name: Copy merged CSV to final destination
+      copy:
+        src: /tmp/merged_passwords.csv
+        dest: /root/merged_passwords.csv
+
+    - name: Clean up temporary files
+      file:
+        path: /tmp/csv_files
+        state: absent
+
